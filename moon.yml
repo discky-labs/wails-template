@@ -4,8 +4,9 @@ layer: "configuration"
 
 tasks:
   typos:
-    script: "pnpm exec typos"
+    script: "bash ./scripts/typos.sh"
     inputs:
+      - "scripts/typos.sh"
       - "**/*"
       - "!**/dist/**"
       - "!**/node_modules/**"

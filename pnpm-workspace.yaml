@@ -52,8 +52,6 @@ catalog:
 # pnpm 11 requires explicit allow/deny on postinstall scripts.
 # esbuild: vite bundling. lightningcss: Tailwind v4's native CSS engine.
 allowBuilds:
-  # Fetches the typos binary used by the root `:typos` task.
-  "@ocular-d/typos-bin": true
   esbuild: true
   lightningcss: true
 

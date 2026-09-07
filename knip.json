@@ -5,7 +5,6 @@
       "ignoreDependencies": [
         "@commitlint/cli",
         "@manypkg/cli",
-        "@ocular-d/typos-bin",
         "oxfmt",
         "oxlint",
         "syncpack"

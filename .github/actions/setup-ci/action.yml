@@ -23,6 +23,9 @@ inputs:
   semgrep-version:
     description: semgrep pip version. Installed only when set.
     required: false
+  typos-version:
+    description: typos release tag (e.g. v1.50.1). Installed only when set.
+    required: false
 
 # Convention borrowed from monorepo-template: `profile` selects the coarse
 # CACHES a class of job shares, while an individual TOOL install is gated on its
@@ -90,6 +93,19 @@ runs:
     # Gated on its OWN input, never on the profile: a bare `semgrep==` resolves
     # to a dummy 0.0.0 sdist and reds every job that shares the profile but
     # passes no version.
+    # typos is a standalone Rust binary, deliberately NOT an npm dependency: the
+    # npm wrapper ships no Windows build and broke `pnpm install` on that runner
+    # over a check Windows never runs. See scripts/typos.sh.
+    - name: Install typos
+      if: inputs.typos-version != '' && runner.os == 'Linux'
+      shell: bash
+      run: |
+        mkdir -p "$HOME/.local/bin"
+        curl -fsSL "https://github.com/crate-ci/typos/releases/download/${{ inputs.typos-version }}/typos-${{ inputs.typos-version }}-x86_64-unknown-linux-musl.tar.gz" \
+          | tar -xz -C "$HOME/.local/bin" ./typos
+        chmod +x "$HOME/.local/bin/typos"
+        echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
     - name: Cache pip wheels (semgrep)
       if: inputs.semgrep-version != ''
       uses: actions/cache@v5
