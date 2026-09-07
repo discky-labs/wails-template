@@ -24,8 +24,14 @@ import (
 type PreferencesService struct {
 	store *config.Store
 
-	mu    sync.RWMutex
-	prefs config.Preferences
+	// mu guards prefs and is NEVER held across disk I/O: a bound method is
+	// reachable from every window, so a reader must not queue behind a file
+	// write. writeMu serializes the read-modify-write instead, which keeps two
+	// concurrent writers from interleaving on the file without ever making
+	// Get() wait on a syscall.
+	mu      sync.RWMutex
+	prefs   config.Preferences
+	writeMu sync.Mutex
 }
 
 // NewPreferencesService wires the service to a store. Dependencies arrive
@@ -61,6 +67,10 @@ func (s *PreferencesService) ServiceStartup(_ context.Context, _ application.Ser
 // already canceled, so this must not depend on anything else still running.
 // Writing a file does not.
 func (s *PreferencesService) ServiceShutdown() error {
+	// Take writeMu so this cannot interleave with an in-flight SetTheme.
+	s.writeMu.Lock()
+	defer s.writeMu.Unlock()
+
 	s.mu.RLock()
 	prefs := s.prefs
 	s.mu.RUnlock()
@@ -86,21 +96,29 @@ func (s *PreferencesService) Get() config.Preferences {
 // or crash, and silently losing a setting the user just changed is worse than
 // the cost of one small file write.
 func (s *PreferencesService) SetTheme(theme string) (config.Preferences, error) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
+	// writeMu spans the whole read-modify-write, so two callers cannot each
+	// read the old value and race to persist their own version.
+	s.writeMu.Lock()
+	defer s.writeMu.Unlock()
 
+	s.mu.RLock()
 	updated := s.prefs
+	s.mu.RUnlock()
+
 	if err := updated.SetTheme(theme); err != nil {
-		return s.prefs, fmt.Errorf("set theme: %w", err)
+		return s.Get(), fmt.Errorf("set theme: %w", err)
 	}
 
+	// The write happens with mu released — readers keep running.
 	if err := s.store.Save(updated); err != nil {
-		return s.prefs, fmt.Errorf("persist preferences: %w", err)
+		return s.Get(), fmt.Errorf("persist preferences: %w", err)
 	}
 
+	s.mu.Lock()
 	s.prefs = updated
+	s.mu.Unlock()
 
-	return s.prefs, nil
+	return updated, nil
 }
 
 // Themes lists the accepted theme names, so the frontend renders the options
