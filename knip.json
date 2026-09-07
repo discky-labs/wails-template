@@ -1,0 +1,24 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "workspaces": {
+    ".": {
+      "ignoreDependencies": [
+        "@commitlint/cli",
+        "@manypkg/cli",
+        "@ocular-d/typos-bin",
+        "oxfmt",
+        "oxlint",
+        "syncpack"
+      ]
+    },
+    "libraries/ts-shared": {},
+    "apps/desktop/frontend": {
+      "ignore": [
+        "bindings/**"
+      ],
+      "ignoreDependencies": [
+        "@tanstack/router-cli"
+      ]
+    }
+  }
+}

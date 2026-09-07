@@ -1,0 +1,11 @@
+{
+  "$schema": "https://unpkg.com/syncpack@15.0.0/schema.json",
+  "versionGroups": [
+    {
+      "label": "internal packages must use workspace protocol",
+      "dependencies": ["@local/**"],
+      "pinVersion": "workspace:*"
+    }
+  ],
+  "sortFirst": ["name", "version", "private"]
+}

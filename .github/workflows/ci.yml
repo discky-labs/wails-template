@@ -1,0 +1,152 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  GOLANGCI_LINT_VERSION: v2.12.2
+  SEMGREP_VERSION: "1.172.0"
+
+jobs:
+  format-lint:
+    name: format + lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/setup-ci
+        with:
+          profile: go-js
+          golangci-lint-version: ${{ env.GOLANGCI_LINT_VERSION }}
+          # golangci-lint typechecks the Go packages, and main.go embeds the
+          # webview-linked application package, so cgo headers are required
+          # even to lint.
+          webview: "true"
+      - name: format-check
+        run: moon ci :format-check
+      - name: lint
+        run: moon ci :lint
+      - name: tidy-check
+        run: moon ci :tidy-check
+
+  typecheck:
+    name: typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/setup-ci
+        with:
+          profile: go-js
+          webview: "true"
+      # tsconfig `references` are moon-managed (.moon/toolchains.yml
+      # typescript.syncProjectReferences): re-sync and fail on drift, so a
+      # workspace-dep change that skipped `moon sync` fails here. Fix locally
+      # with `moon sync`, then restore any stripped tsconfig comments.
+      - name: project references synced
+        run: |
+          moon sync
+          git diff --exit-code -- '*tsconfig.json'
+      # tsc --build refuses circular project references; catch them explicitly
+      # rather than as a confusing typecheck failure.
+      - name: no circular project references
+        run: pnpm exec tsc --build tsconfig.json --dry
+      - name: typecheck
+        run: moon ci :typecheck
+
+  test:
+    name: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/setup-ci
+        with:
+          profile: go-js
+          webview: "true"
+      - name: test
+        run: moon ci :test
+
+  quality:
+    name: quality
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/setup-ci
+        with:
+          profile: go-js
+          webview: "true"
+          semgrep-version: ${{ env.SEMGREP_VERSION }}
+      - name: typos
+        run: moon ci :typos
+      - name: check-consistency
+        run: moon ci :check-consistency
+      - name: deadcode
+        run: moon ci :deadcode
+      - name: audit
+        run: moon ci :audit
+      # The rules' regression suite runs alongside the scan: a rule with no
+      # fixture coverage is a rule nobody can safely change.
+      - name: semgrep-test
+        run: moon ci :semgrep-test
+      - name: semgrep
+        run: moon ci :semgrep
+
+  # Generated files are committed, so a change that forgot to regenerate them
+  # must fail here rather than surface as a broken build for the next person.
+  codegen-drift:
+    name: codegen drift
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/setup-ci
+        with:
+          profile: go-js
+          webview: "true"
+      - name: bindings up to date
+        run: |
+          moon run desktop-frontend:bindings
+          git diff --exit-code -- apps/desktop/frontend/bindings
+      - name: route tree up to date
+        run: |
+          moon run desktop-frontend:gen-routes
+          git diff --exit-code -- apps/desktop/frontend/src/routeTree.gen.ts
+
+  # The real cross-platform gate: CGO means each OS must build natively, and a
+  # binary that compiles can still die on launch, so every platform also runs
+  # the app.
+  build:
+    name: build + run (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-14, windows-latest]
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/setup-ci
+        with:
+          profile: go-js
+          webview: "true"
+          xvfb: "true"
+      - name: build
+        run: moon run desktop:build
+      - name: run (smoke test)
+        run: moon run desktop:smoke

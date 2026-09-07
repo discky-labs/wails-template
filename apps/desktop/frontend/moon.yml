@@ -1,0 +1,63 @@
+$schema: "https://moonrepo.dev/schemas/v2/project.json"
+
+language: "typescript"
+layer: "application"
+
+# This project owns everything generated under frontend/: the Go bindings AND
+# the vite bundle. apps/desktop only consumes dist/. Splitting the two would
+# make moon's project graph cyclic — the Go binary embeds frontend/dist while
+# the frontend imports Go-generated bindings.
+tasks:
+  # TS bindings for every exported Go service method. Committed to git (vite
+  # cannot resolve ./bindings without them), so CI diffs this to catch a
+  # service change that was never regenerated.
+  bindings:
+    command: "bash $workspaceRoot/scripts/wails-bindings.sh"
+    inputs:
+      - "/apps/desktop/**/*.go"
+      - "/apps/desktop/go.mod"
+      - "/apps/desktop/go.sum"
+      - "/scripts/wails-bindings.sh"
+    outputs:
+      - "bindings/**/*"
+    options:
+      runInCI: true
+      cache: true
+
+  # TanStack's vite plugin regenerates routeTree.gen.ts during dev/build, but
+  # typecheck runs without vite — so the CLI generates it explicitly here.
+  gen-routes:
+    command: "pnpm exec tsr generate"
+    inputs:
+      - "src/routes/**/*"
+    outputs:
+      - "src/routeTree.gen.ts"
+    options:
+      runInCI: true
+      cache: true
+
+  typecheck:
+    deps: ["~:bindings", "~:gen-routes"]
+
+  build:
+    command: "pnpm run build"
+    deps: ["~:typecheck"]
+    inputs:
+      - "src/**/*"
+      - "public/**/*"
+      - "bindings/**/*"
+      - "index.html"
+      - "vite.config.ts"
+      - "tsconfig.json"
+      - "package.json"
+    outputs:
+      - "dist/**/*"
+    options:
+      runInCI: true
+      cache: true
+
+  # Started by scripts/wails-dev.sh, which owns the port contract. Running this
+  # alone serves the UI in a browser, but Go bindings will not work there.
+  dev:
+    command: "pnpm run dev"
+    preset: "server"

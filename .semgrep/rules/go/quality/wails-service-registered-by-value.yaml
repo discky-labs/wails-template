@@ -1,0 +1,14 @@
+rules:
+  - id: go-wails-service-registered-by-value
+    languages: [go]
+    severity: ERROR
+    message: >-
+      Wails service registered by value. Bound methods are called on a copy, so
+      any state the service accumulates is silently discarded and pointer-
+      receiver methods are not bound at all. Register a pointer:
+      `application.NewService(&DemoService{})`.
+      See .claude/skills/wails/SKILL.md.
+    patterns:
+      - pattern-either:
+          - pattern: application.NewService($T{...})
+          - pattern: application.NewServiceWithOptions($T{...}, ...)

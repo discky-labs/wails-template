@@ -1,0 +1,39 @@
+# Every pre-commit task is scoped with `--affected --status=staged` so a
+# one-file commit doesn't fan out across the whole workspace. moon reads the
+# staged set from git itself — no {staged_files} plumbing needed.
+# https://moonrepo.dev/docs/guides/vcs-hooks
+#
+# `moon` comes from proto (.prototools), not a node_modules dep, so it is
+# invoked directly rather than through `pnpm exec`.
+pre-commit:
+  commands:
+    tidy:
+      run: moon run :tidy --affected --status=staged
+    format-check:
+      run: moon run :format-check --affected --status=staged
+    format:
+      run: moon run :format --affected --status=staged
+    lint:
+      run: moon run :lint --affected --status=staged
+    # --downstream direct: knip's unused-export detection depends on the
+    # consumers of a changed project, not just the project itself.
+    deadcode:
+      run: moon run :deadcode --affected --status=staged --downstream direct
+    stage:
+      run: git add -A .
+
+pre-push:
+  commands:
+    lint-affected:
+      run: moon run :lint --affected --downstream direct
+    test:
+      run: moon run :test --affected --downstream direct
+    # Pre-push, not pre-commit: it scans the whole Go tree rather than the
+    # staged set, and skips itself when semgrep isn't installed locally.
+    semgrep:
+      run: moon run root:semgrep
+
+commit-msg:
+  commands:
+    commitlint:
+      run: pnpm exec commitlint --edit {1}

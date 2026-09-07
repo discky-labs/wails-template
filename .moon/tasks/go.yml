@@ -1,0 +1,121 @@
+$schema: "https://moonrepo.dev/schemas/v2/tasks.json"
+
+inheritedBy:
+  toolchain: "go"
+
+fileGroups:
+  go-sources:
+    - "**/*.go"
+    - "!vendor/**"
+
+tasks:
+  # Overridden by apps/desktop (a Wails binary is built by scripts/wails-build.sh,
+  # not `go build -o`) and by .moon/tasks/go-library.yml (`go build ./...`).
+  build:
+    command: "go build ./..."
+    inputs:
+      - "@group(go-sources)"
+      - "go.mod"
+      - "go.sum"
+    options:
+      runInCI: true
+      cache: true
+
+  # No testcontainers in this repo, so no `-tags=integration` split and the
+  # results are safely cacheable (unlike monorepo-template, where container boot
+  # timing is part of what the suite exercises).
+  test:
+    command: "go test -race -cover ./..."
+    inputs:
+      - "@group(go-sources)"
+      - "go.mod"
+      - "go.sum"
+    options:
+      runInCI: true
+      cache: true
+
+  lint:
+    # --allow-parallel-runners: golangci-lint's default lock prevents two
+    # instances running concurrently. With multiple Go modules here
+    # (apps/desktop, libraries/core), moon's scheduler runs them at the same
+    # time on the same machine. Each operates on its own module dir, so the
+    # lock is overprotective.
+    command: "golangci-lint run ./... --fix --allow-parallel-runners"
+    inputs:
+      - "@group(go-sources)"
+      - "/.golangci.yml"
+    options:
+      runInCI: true
+      cache: true
+
+  format:
+    # Runs the full formatter chain declared in .golangci.yml (gci + gofmt +
+    # gofumpt + goimports + golines) so `:format` and `:format-check` validate
+    # the same rules. `gofmt -w .` alone would leave golines/gci/gofumpt changes
+    # for `:lint --fix` to catch later.
+    command: "golangci-lint fmt"
+    options:
+      runInCI: false
+      cache: false
+
+  format-check:
+    command: "golangci-lint fmt --diff"
+    inputs:
+      - "@group(go-sources)"
+      - "/.golangci.yml"
+    options:
+      runInCI: true
+      cache: true
+
+  # Keep the per-module tidy side-effect scoped to go.mod/go.sum. `moon run
+  # :tidy` fans this out across every Go project, so workspace-wide mutators
+  # such as `go work sync` must not run here in parallel.
+  tidy:
+    command: "go mod tidy"
+    inputs:
+      - "@group(go-sources)"
+      - "go.mod"
+      - "go.sum"
+      - "/go.work"
+    options:
+      runInCI: false
+      cache: false
+
+  tidy-check:
+    command: "go mod tidy -diff"
+    inputs:
+      - "@group(go-sources)"
+      - "go.mod"
+      - "go.sum"
+      - "/go.work"
+    options:
+      runInCI: true
+      # Module sums can change after a dependency is first downloaded, so a
+      # cached pass can hide a clean-run CI failure.
+      cache: false
+
+  deadcode:
+    # `deadcode` is report-only by design (exit 0 even with findings). The
+    # script wrapper flips "any output" -> non-zero so CI catches newly-orphaned
+    # funcs. Neutralised for library modules (see libraries/core/moon.yml).
+    script: "bash $workspaceRoot/scripts/deadcode.sh"
+    inputs:
+      - "@group(go-sources)"
+      - "go.mod"
+      - "go.sum"
+      - "/scripts/deadcode.sh"
+      - "/.prototools"
+    options:
+      runInCI: true
+      cache: true
+
+  audit:
+    command: "go tool govulncheck ./..."
+    inputs:
+      - "@group(go-sources)"
+      - "go.mod"
+      - "go.sum"
+      - "/.prototools"
+    options:
+      runInCI: true
+      cache: true

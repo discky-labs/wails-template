@@ -1,0 +1,25 @@
+rules:
+  - id: go-wails-v2-api-in-v3
+    languages: [go]
+    severity: ERROR
+    message: >-
+      Wails v2 API in a v3 project. v2 and v3 have incompatible APIs and this
+      repo targets v3 only (github.com/wailsapp/wails/v3). Use
+      `app.Event.Emit(...)` rather than `runtime.EventsEmit(ctx, ...)`, and
+      `Services: []application.Service{application.NewService(&Svc{})}` rather
+      than `Bind: []any{...}`. Blending the two is the most common Wails
+      failure mode: it either fails to compile or silently binds nothing.
+      See .claude/skills/wails/SKILL.md.
+    patterns:
+      - pattern-either:
+          # A regex, not an import pattern: semgrep reports a grouped
+          # `import (...)` declaration at its opening line, so an AST pattern
+          # cannot point at the offending spec. The v2 module is not a
+          # dependency of this repo, so any mention is a mistake.
+          - pattern-regex: '"github\.com/wailsapp/wails/v2(/[^"]*)?"'
+          # v2's context-threading runtime calls.
+          - pattern: $RUNTIME.EventsEmit($CTX, ...)
+          - pattern: $RUNTIME.EventsOn($CTX, ...)
+          # v2's entrypoint and binding field.
+          - pattern: wails.Run(...)
+          - pattern: "application.Options{..., Bind: $B, ...}"

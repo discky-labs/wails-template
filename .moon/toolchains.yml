@@ -1,0 +1,19 @@
+$schema: "https://moonrepo.dev/schemas/v2/toolchains.json"
+
+# TypeScript toolchain: sync operations only — no version management (tsc is the
+# root package.json's typescript dep). syncProjectReferences maintains each
+# project's tsconfig.json `references` from moon's dependency graph (package.json
+# workspace: deps), so a project that starts depending on @local/ts-shared gets
+# its project-reference wiring on `moon sync` instead of by hand.
+typescript:
+  syncProjectReferences: true
+  # pruneProjectReferences stays OFF deliberately: with prune, an explicit
+  # `moon sync` trims the root tsconfig's references to dependency-graph roots,
+  # while the per-project sync inside every `moon run` adds each project back —
+  # the root file would flip-flop between the two codepaths.
+  #
+  # File-handling caveats:
+  #   - The ROOT tsconfig.json is moon-regenerated: keep it comment-free.
+  #   - Project tsconfigs are only rewritten when their references CHANGE, but a
+  #     rewrite drops JSONC comments and oxfmt formatting — restore both in the
+  #     same commit.

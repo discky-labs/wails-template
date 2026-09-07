@@ -1,0 +1,77 @@
+packages:
+  - "libraries/ts-shared"
+  - "apps/desktop/frontend"
+
+# Versions live here once, and manifests reference them as `catalog:`. The
+# frontend stack is catalogued because it is what a second app would duplicate;
+# root-only devtools stay pinned directly in package.json, where a catalog entry
+# would add indirection with nothing to dedupe against.
+catalog:
+  # React
+  react: 19.2.8
+  react-dom: 19.2.8
+  "@types/react": 19.2.18
+  "@types/react-dom": 19.2.7
+
+  # Language + build. TypeScript 7 is the native (Go) compiler; `tsc --build`
+  # drives the project-reference graph in .moon/tasks/typescript.yml.
+  typescript: 7.0.2
+  vite: 8.2.2
+  "@vitejs/plugin-react": 6.1.1
+
+  # Styling — Tailwind v4 is CSS-first: `@import "tailwindcss"`, no JS config.
+  tailwindcss: 4.3.3
+  "@tailwindcss/vite": 4.3.3
+
+  # Routing. The router PLUGIN regenerates routeTree.gen.ts during vite
+  # dev/build; the CLI (router-cli, `tsr generate`) exists only for the moon
+  # gen-routes task, since typecheck runs without vite.
+  "@tanstack/react-router": 1.170.33
+  "@tanstack/router-plugin": 1.168.36
+  "@tanstack/router-cli": 1.167.34
+
+  # Data / forms / validation
+  "@tanstack/react-query": 5.102.8
+  zod: 4.5.4
+  "@t3-oss/env-core": 0.13.11
+  sonner: 2.0.8
+
+  # Wails runtime. MUST stay in lockstep with the Go module version in
+  # apps/desktop/go.mod — the npm package and the Go module ship together, and
+  # the template's floating "latest" would drift within days on a nightly beta.
+  "@wailsio/runtime": 3.0.0-beta.17
+
+  # Test
+  vitest: 5.0.0
+  "@vitest/coverage-v8": 5.0.0
+  jsdom: 30.0.1
+  "@testing-library/dom": 10.4.1
+  "@testing-library/react": 16.3.3
+  "@testing-library/user-event": 14.6.7
+
+# pnpm 11 requires explicit allow/deny on postinstall scripts.
+# esbuild: vite bundling. lightningcss: Tailwind v4's native CSS engine.
+allowBuilds:
+  # Fetches the typos binary used by the root `:typos` task.
+  "@ocular-d/typos-bin": true
+  esbuild: true
+  lightningcss: true
+
+minimumReleaseAgeExclude:
+  - '@tanstack/history@1.162.2'
+  - '@tanstack/react-router@1.170.33'
+  - '@tanstack/router-cli@1.167.34'
+  - '@tanstack/router-core@1.171.28'
+  - '@tanstack/router-generator@1.167.34'
+  - '@tanstack/router-plugin@1.168.36'
+  - '@wailsio/runtime@3.0.0-beta.17'
+
+# The `minimumReleaseAgeExclude` list above is MAINTAINED BY PNPM, not by hand:
+# a release-age gate is active, and `pnpm install` appends any pin that is newer
+# than the threshold. @wailsio/runtime is there permanently by nature — it must
+# stay in lockstep with the Go module, and v3 betas ship near-nightly, so the
+# pin is always days old. Entries for packages that have since aged out can be
+# deleted; `pnpm install` re-adds whatever is still needed.
+#
+# apps/desktop/frontend/.npmrc carries the upstream template's own
+# `minimum-release-age=10080`, which pnpm honours per-directory.

@@ -1,0 +1,17 @@
+$schema: "https://moonrepo.dev/schemas/v2/workspace.json"
+
+# Explicit `sources` rather than globs: apps/desktop/frontend is NESTED inside
+# apps/desktop, and a glob like "apps/*" would claim the Go project and hide the
+# frontend. They must be separate projects because moon inherits quality tasks
+# per-project by toolchain/language (.moon/tasks/*.yml) — one project cannot
+# pick up both the Go and the TypeScript task sets.
+projects:
+  sources:
+    root: "."
+    desktop: "apps/desktop"
+    desktop-frontend: "apps/desktop/frontend"
+    core: "libraries/core"
+    ts-shared: "libraries/ts-shared"
+
+vcs:
+  defaultBranch: "main"

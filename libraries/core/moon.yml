@@ -1,0 +1,20 @@
+$schema: "https://moonrepo.dev/schemas/v2/project.json"
+
+language: "go"
+layer: "library"
+toolchains:
+  default: "go"
+
+# `deadcode -test ./...` traces reachability from `main` packages and treats
+# every exported library symbol as unreachable when none exists (always true for
+# a library-only module). apps/desktop imports this package and runs its own
+# deadcode pass — that's where unused exports get caught.
+tasks:
+  deadcode:
+    # Parent task uses `script:`, so override with `script:` too — otherwise
+    # both the inherited script and a `command:` would run.
+    script: "true"
+    options:
+      mergeArgs: "replace"
+      runInCI: false
+      cache: false

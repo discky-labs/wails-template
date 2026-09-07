@@ -1,0 +1,173 @@
+name: Setup CI
+description: Install the toolchains, caches and system libraries a CI job needs.
+
+inputs:
+  profile:
+    description: Which caches to prime — go, js, or go-js.
+    required: true
+  golangci-lint-version:
+    description: golangci-lint release tag. Installed only when set.
+    required: false
+  webview:
+    description: Install the desktop webview libraries (Linux only). "true" to enable.
+    required: false
+    default: "false"
+  xvfb:
+    description: Install Xvfb so a GUI smoke test can run headless (Linux only).
+    required: false
+    default: "false"
+  nsis:
+    description: Install NSIS for building the Windows installer (Windows only).
+    required: false
+    default: "false"
+  semgrep-version:
+    description: semgrep pip version. Installed only when set.
+    required: false
+
+# Convention borrowed from monorepo-template: `profile` selects the coarse
+# CACHES a class of job shares, while an individual TOOL install is gated on its
+# own input being set — never on the profile. Keying a tool to a profile
+# installs it into jobs that never run it, and can build a broken
+# `<tool>==` requirement that fails them all.
+runs:
+  using: composite
+  steps:
+    - uses: moonrepo/setup-toolchain@v0
+      with:
+        auto-install: false
+        cache-version: ${{ inputs.profile }}-${{ runner.os }}
+        # Pin the proto CLI: an unpinned "latest" has broken CI before when a
+        # newer proto changed how single-tool installs resolve.
+        proto-version: "0.61.2"
+
+    # Bulk install, not per-tool: `proto install go` (no version) resolves from
+    # ecosystem files (go.work's `go 1.26` -> latest patch) instead of the exact
+    # .prototools pin, installing a Go the shims then refuse.
+    - name: Install pinned toolchain
+      shell: bash
+      run: proto install --yes
+
+    # Wails links GTK4 + WebKitGTK 6.0 on Linux. Without these, cgo fails at
+    # compile time — this is not an optional runtime dependency.
+    - name: Install webview libraries (Linux)
+      if: inputs.webview == 'true' && runner.os == 'Linux'
+      shell: bash
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y --no-install-recommends \
+          build-essential pkg-config libgtk-4-dev libwebkitgtk-6.0-dev
+
+    - name: Install Xvfb (Linux)
+      if: inputs.xvfb == 'true' && runner.os == 'Linux'
+      shell: bash
+      run: sudo apt-get install -y --no-install-recommends xvfb
+
+    - name: Install NSIS (Windows)
+      if: inputs.nsis == 'true' && runner.os == 'Windows'
+      shell: bash
+      run: choco install nsis --no-progress -y
+
+    # Gated on its OWN input, never on the profile: a bare `semgrep==` resolves
+    # to a dummy 0.0.0 sdist and reds every job that shares the profile but
+    # passes no version.
+    - name: Cache pip wheels (semgrep)
+      if: inputs.semgrep-version != ''
+      uses: actions/cache@v5
+      with:
+        path: ~/.cache/pip
+        key: pip-${{ runner.os }}-semgrep-${{ inputs.semgrep-version }}
+
+    - name: Install semgrep
+      if: inputs.semgrep-version != ''
+      shell: bash
+      run: |
+        pip install --user "semgrep==${{ inputs.semgrep-version }}"
+        echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+    - name: Cache Go modules
+      if: inputs.profile == 'go' || inputs.profile == 'go-js'
+      uses: actions/cache@v5
+      with:
+        path: ~/go/pkg/mod
+        key: go-mod-${{ runner.os }}-${{ hashFiles('.prototools') }}-${{ hashFiles('**/go.sum', 'go.work.sum') }}
+        restore-keys: |
+          go-mod-${{ runner.os }}-${{ hashFiles('.prototools') }}-
+
+    - name: Cache Go build outputs
+      if: inputs.profile == 'go' || inputs.profile == 'go-js'
+      uses: actions/cache@v5
+      with:
+        path: |
+          ~/.cache/go-build
+          ~/Library/Caches/go-build
+          ~/AppData/Local/go-build
+          ~/.cache/golangci-lint
+        key: go-build-${{ runner.os }}-${{ hashFiles('.prototools') }}-${{ github.job }}-${{ github.run_id }}-${{ github.run_attempt }}
+        restore-keys: |
+          go-build-${{ runner.os }}-${{ hashFiles('.prototools') }}-${{ github.job }}-
+          go-build-${{ runner.os }}-${{ hashFiles('.prototools') }}-
+
+    - name: Install golangci-lint
+      if: inputs.golangci-lint-version != ''
+      uses: golangci/golangci-lint-action@v9
+      with:
+        version: ${{ inputs.golangci-lint-version }}
+        install-only: true
+
+    - name: Sync go.work
+      if: inputs.profile == 'go' || inputs.profile == 'go-js'
+      shell: bash
+      run: go work sync
+
+    - name: Resolve pnpm store path
+      if: inputs.profile == 'js' || inputs.profile == 'go-js'
+      id: pnpm-store
+      shell: bash
+      run: echo "path=$(pnpm store path --silent)" >> "$GITHUB_OUTPUT"
+
+    - name: Cache pnpm store
+      if: inputs.profile == 'js' || inputs.profile == 'go-js'
+      uses: actions/cache@v5
+      with:
+        path: ${{ steps.pnpm-store.outputs.path }}
+        key: pnpm-store-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+        restore-keys: |
+          pnpm-store-${{ runner.os }}-
+
+    # The .prototools hash is its OWN leading key segment so every fallback
+    # stays inside one toolchain version: a cache written by an older moon,
+    # restored for a branch that bumped moon, kills the new binary on the old
+    # schema before a single task runs.
+    #
+    # workspaceGraph.json is excluded because it is the one file whose
+    # corruption is fatal before any task runs, and a cache archived mid-write
+    # is enough to do it. moon rebuilds it in milliseconds; everything
+    # expensive (hashes/, outputs/) is still cached.
+    - name: Cache moon
+      uses: actions/cache@v5
+      with:
+        path: |
+          .moon/cache
+          !.moon/cache/states/workspaceGraph.json
+        key: >-
+          moon2-${{ runner.os }}-${{ hashFiles('.prototools') }}-${{
+          hashFiles('pnpm-lock.yaml', '**/go.sum', '.moon/**/*.yml',
+          '**/moon.yml') }}-${{ github.job }}-${{ github.run_id }}-${{
+          github.run_attempt }}
+        restore-keys: |
+          moon2-${{ runner.os }}-${{ hashFiles('.prototools') }}-${{ hashFiles('pnpm-lock.yaml', '**/go.sum', '.moon/**/*.yml', '**/moon.yml') }}-${{ github.job }}-
+          moon2-${{ runner.os }}-${{ hashFiles('.prototools') }}-${{ hashFiles('pnpm-lock.yaml', '**/go.sum', '.moon/**/*.yml', '**/moon.yml') }}-
+          moon2-${{ runner.os }}-${{ hashFiles('.prototools') }}-
+
+    # Finishes the job the `!` exclusion above starts: exclusion stops a path
+    # being SAVED, never RESTORED, and the loosest restore-key can still reach
+    # archives saved before it was added. A graph from an older moon then fails
+    # every task at "Building action graph".
+    - name: Drop a restored workspace graph from an older moon
+      shell: bash
+      run: rm -f .moon/cache/states/workspaceGraph.json
+
+    - name: Install JS deps
+      if: inputs.profile == 'js' || inputs.profile == 'go-js'
+      shell: bash
+      run: pnpm install --frozen-lockfile

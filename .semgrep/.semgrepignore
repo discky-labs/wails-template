@@ -1,0 +1,4 @@
+# Keep the rules' own fixtures out of scans started from inside .semgrep/.
+# The scan proper (scripts/semgrep.sh) scopes to `apps libraries`, so fixtures
+# are already out of range there.
+rules/

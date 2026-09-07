@@ -1,0 +1,92 @@
+$schema: "https://moonrepo.dev/schemas/v2/project.json"
+
+language: "go"
+layer: "application"
+toolchains:
+  default: "go"
+
+# moon is the only task runner here: the wails3-generated Taskfiles were
+# deleted, and these tasks call the same underlying `go build` and
+# `wails3 generate` / `wails3 tool` subcommands they used to. Bodies stay thin —
+# real logic lives in /scripts, declared as inputs so a script edit invalidates
+# the cache.
+#
+# Paths are written relative to this project root (moon's task cwd), which is
+# why they carry a `build/` prefix where the upstream Taskfiles used `dir: build`.
+tasks:
+  # appicon.png -> darwin/icons.icns + windows/icon.ico (plus Assets.car on macOS).
+  icons:
+    command: >-
+      go tool wails3 generate icons
+      -input build/appicon.png
+      -macfilename build/darwin/icons.icns
+      -windowsfilename build/windows/icon.ico
+      -iconcomposerinput build/appicon.icon
+      -macassetdir build/darwin
+    inputs:
+      - "build/appicon.png"
+      - "build/appicon.icon/**/*"
+    outputs:
+      - "build/darwin/icons.icns"
+      - "build/windows/icon.ico"
+    options:
+      runInCI: false
+      cache: true
+
+  # Overrides the inherited `go build ./...` from .moon/tasks/go.yml — a Wails
+  # binary needs per-OS tags, ldflags and (on Windows) a generated .syso.
+  build:
+    command: "bash $workspaceRoot/scripts/wails-build.sh"
+    deps: ["desktop-frontend:build"]
+    inputs:
+      - "**/*.go"
+      - "go.mod"
+      - "go.sum"
+      - "/scripts/wails-build.sh"
+    outputs:
+      - "bin/**/*"
+    options:
+      mergeArgs: "replace"
+      mergeOutputs: "replace"
+      runInCI: true
+      cache: true
+
+  # Launch the built binary and assert it survives a few seconds. `go build`
+  # cannot catch a missing webview library or a failed ServiceStartup, so CI
+  # runs this on all three platforms.
+  smoke:
+    command: "bash $workspaceRoot/scripts/smoke.sh"
+    deps: ["~:build"]
+    inputs:
+      - "/scripts/smoke.sh"
+    options:
+      # Launches a GUI process; only meaningful on a runner with a display
+      # (CI supplies Xvfb on Linux). Invoked explicitly by the workflow.
+      runInCI: false
+      cache: false
+
+  package:
+    command: "bash $workspaceRoot/scripts/wails-package.sh"
+    deps: ["~:build"]
+    inputs:
+      - "build/**/*"
+      - "/scripts/wails-package.sh"
+    options:
+      runInCI: false
+      cache: false
+
+  # vite dev server + air-driven Go rebuilds. Long-running.
+  dev:
+    command: "bash $workspaceRoot/scripts/wails-dev.sh"
+    preset: "server"
+    options:
+      runInCI: false
+      cache: false
+
+  # Refreshes build/ scaffolding (plists, nsis, nfpm) after a wails3 upgrade.
+  # Still available with the Taskfiles gone — it is a CLI subcommand.
+  update-build-assets:
+    command: "go tool wails3 update build-assets -name desktop -binaryname desktop -config build/config.yml -dir build"
+    options:
+      runInCI: false
+      cache: false

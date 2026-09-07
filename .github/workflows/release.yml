@@ -1,0 +1,74 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing tag to build a release for
+        required: true
+
+concurrency:
+  group: release-${{ github.ref }}
+  # Never cancel a release mid-upload — a partially populated release is worse
+  # than a slow one.
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  # CGO rules out cross-compiling to macOS and Linux, and a DMG cannot be built
+  # anywhere but macOS, so each platform's installers are produced natively.
+  package:
+    name: package (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            artifacts: |
+              apps/desktop/bin/*.AppImage
+              apps/desktop/bin/*.deb
+              apps/desktop/bin/*.rpm
+          - os: macos-14
+            artifacts: |
+              apps/desktop/bin/*.dmg
+          - os: windows-latest
+            artifacts: |
+              apps/desktop/bin/*-installer.exe
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/setup-ci
+        with:
+          profile: go-js
+          webview: "true"
+          xvfb: "true"
+          nsis: ${{ matrix.os == 'windows-latest' }}
+
+      - name: build
+        run: moon run desktop:build
+
+      # Ship nothing that has not started at least once.
+      - name: run (smoke test)
+        run: moon run desktop:smoke
+
+      - name: package
+        run: moon run desktop:package
+
+      - name: list artifacts
+        shell: bash
+        run: ls -lh apps/desktop/bin/
+
+      - name: upload to release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.tag || github.ref_name }}
+          files: ${{ matrix.artifacts }}
+          fail_on_unmatched_files: true
+          draft: true
+          generate_release_notes: true

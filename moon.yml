@@ -1,0 +1,123 @@
+$schema: "https://moonrepo.dev/schemas/v2/project.json"
+
+layer: "configuration"
+
+tasks:
+  typos:
+    script: "pnpm exec typos"
+    inputs:
+      - "**/*"
+      - "!**/dist/**"
+      - "!**/node_modules/**"
+      - "!**/bindings/**"
+      - "/typos.toml"
+    options:
+      runInCI: true
+      cache: true
+
+  check-consistency:
+    script: "pnpm exec syncpack lint && pnpm exec manypkg check"
+    inputs:
+      - "**/package.json"
+      - "/.syncpackrc.json"
+      - "/pnpm-workspace.yaml"
+    options:
+      runInCI: true
+      cache: true
+
+  deadcode:
+    script: "pnpm exec knip"
+    inputs:
+      - "**/*.{ts,tsx,js,jsx,json}"
+      - "!**/dist/**"
+      - "!**/node_modules/**"
+      - "!**/coverage/**"
+      - "!**/bindings/**"
+      - "!**/*.gen.ts"
+      - "/knip.json"
+    options:
+      runInCI: true
+      cache: true
+
+  audit:
+    script: "pnpm audit --prod --audit-level high"
+    inputs:
+      - "/pnpm-lock.yaml"
+    options:
+      runInCI: true
+      cache: true
+
+  # Workspace-scoped markdown formatting. oxfmt formats .md natively; the
+  # per-language `format` tasks only reach files inside each project's root, so
+  # .md under .claude/ and the workspace-root README would never be touched.
+  # Joining the :format fan-out via these root tasks closes the gap.
+  format:
+    command: "pnpm exec oxfmt --write '**/*.md' '!node_modules' '!**/node_modules/**' '!dist' '!**/dist/**' '!.moon/cache'"
+    inputs:
+      - "**/*.md"
+      - "!**/node_modules/**"
+      - "!**/dist/**"
+      - "!**/.moon/cache/**"
+      - "/.oxfmtrc.json"
+    options:
+      runInCI: false
+      cache: false
+
+  format-check:
+    command: "pnpm exec oxfmt --check '**/*.md' '!node_modules' '!**/node_modules/**' '!dist' '!**/dist/**' '!.moon/cache'"
+    inputs:
+      - "**/*.md"
+      - "!**/node_modules/**"
+      - "!**/dist/**"
+      - "!**/.moon/cache/**"
+      - "/.oxfmtrc.json"
+    options:
+      runInCI: true
+      cache: true
+
+  # Repo-specific static analysis — the Wails v3 invariants golangci-lint
+  # cannot express (v2/v3 API mixing, manager-API drift, embed prefix, service
+  # registered by value). Rules + fixtures live in .semgrep/; read
+  # .semgrep/README.md before adding one.
+  semgrep:
+    script: "bash ./scripts/semgrep.sh scan"
+    inputs:
+      - "apps/**/*.go"
+      - "libraries/**/*.go"
+      - "/.semgrep/rules/**/*.yaml"
+      - "scripts/semgrep.sh"
+    options:
+      runInCI: true
+      cache: true
+
+  # The rules' own regression suite. A rule with no fixture coverage is a rule
+  # nobody can safely change, so this gates CI alongside the scan.
+  semgrep-test:
+    script: "bash ./scripts/semgrep.sh test"
+    inputs:
+      - "/.semgrep/rules/**/*"
+      - "scripts/semgrep.sh"
+    options:
+      runInCI: true
+      cache: true
+
+  # Installs the standalone binaries proto and `go tool` don't cover.
+  install-tools:
+    script: "bash ./scripts/install-tools.sh"
+    options:
+      runInCI: false
+      cache: false
+
+  # Restore exact lockfile state after a clone or pull.
+  sync-deps:
+    script: "pnpm install --frozen-lockfile && go work sync"
+    options:
+      runInCI: false
+      cache: false
+
+  # Bump every dependency and refresh the lockfiles.
+  upgrade:
+    script: "go get -u ./... && go work sync && pnpm update --latest"
+    options:
+      runInCI: false
+      cache: false

@@ -1,0 +1,17 @@
+# Pinned toolchain — `proto use` installs everything here on any machine,
+# and CI reads this same file via moonrepo/setup-toolchain.
+# renovate: datasource=golang-version depName=go
+go = "1.26.6"
+# renovate: datasource=node-version depName=node
+node = "24.19.0"
+# renovate: datasource=npm depName=pnpm
+pnpm = "11.22.0"
+# renovate: datasource=npm depName=@moonrepo/cli
+moon = "2.5.3"
+
+[settings]
+detect-strategy = "only-prototools"
+
+[tools.go.env]
+GOPATH = false
+GOROOT = false

@@ -1,0 +1,14 @@
+rules:
+  - id: go-wails-embed-missing-all-prefix
+    languages: [go]
+    severity: ERROR
+    message: >-
+      //go:embed on frontend/dist without the `all:` prefix. Without it Go skips
+      files whose names begin with `.` or `_`, which is exactly what a bundler
+      emits — so the app builds, runs, and serves a blank window in production
+      while working in dev. Write `//go:embed all:frontend/dist`.
+      See .claude/skills/wails/SKILL.md.
+    # No lookahead: semgrep's pattern-regex engine does not support it. Matching
+    # whitespace followed IMMEDIATELY by the path is enough — an `all:` prefix
+    # simply fails to match.
+    pattern-regex: '//go:embed[ \t]+frontend/dist'

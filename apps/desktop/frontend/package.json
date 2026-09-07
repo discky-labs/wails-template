@@ -1,0 +1,42 @@
+{
+  "name": "@local/desktop-frontend",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "imports": {
+    "#/*": "./src/*",
+    "#bindings": "./bindings/github.com/raphaeldiscky/wails-template/apps/desktop/services/index.ts"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build --mode production",
+    "build:dev": "vite build --minify false --mode development",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@local/ts-shared": "workspace:*",
+    "@t3-oss/env-core": "catalog:",
+    "@tanstack/react-query": "catalog:",
+    "@tanstack/react-router": "catalog:",
+    "@wailsio/runtime": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "sonner": "catalog:",
+    "tailwindcss": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "catalog:",
+    "@tanstack/router-cli": "catalog:",
+    "@tanstack/router-plugin": "catalog:",
+    "@testing-library/dom": "catalog:",
+    "@testing-library/react": "catalog:",
+    "@testing-library/user-event": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@vitejs/plugin-react": "catalog:",
+    "jsdom": "catalog:",
+    "vite": "catalog:",
+    "vitest": "catalog:"
+  }
+}

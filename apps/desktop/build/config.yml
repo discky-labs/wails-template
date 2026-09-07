@@ -1,0 +1,35 @@
+# Metadata for the generated build assets (Info.plist, NSIS installer,
+# nfpm deb/rpm, Windows version resource).
+#
+# After changing `info` or `fileAssociations`, regenerate the assets with:
+#   moon run desktop:update-build-assets
+# Note that this overwrites hand-edits to the generated files under build/.
+#
+# There is deliberately NO `dev_mode:` block: that was only read by `wails3
+# dev`, which this template replaces with `moon run desktop:dev`
+# (scripts/wails-dev.sh + .air.toml). Adding it back would be dead config.
+version: '3'
+
+# CHANGE THESE — they end up in installers, bundle identifiers and package
+# metadata, and the identifier must be globally unique to you.
+info:
+  companyName: "Raphael Discky"
+  productName: "Desktop"
+  productIdentifier: "com.raphaeldiscky.wails-template"
+  description: "Wails v3 + Go + React desktop template"
+  copyright: "(c) 2026, Raphael Discky"
+  comments: "Generated from wails-template"
+  version: "0.0.1"
+
+# File Associations
+# More information at: https://v3.wails.io/noit/done/yet
+fileAssociations:
+#  - ext: wails
+#    name: Wails
+#    description: Wails Application File
+#    iconName: wailsFileIcon
+#    role: Editor
+
+# Other data
+other:
+  - name: My Other Data

@@ -1,0 +1,32 @@
+$schema: "https://moonrepo.dev/schemas/v2/tasks.json"
+
+# Inherited by every Go library project (toolchain: go AND layer: library).
+# Layers on top of .moon/tasks/go.yml — replaces tasks that don't make sense
+# for libraries (which have no main package or runnable entrypoint).
+inheritedBy:
+  toolchain: "go"
+  layer: "library"
+
+tasks:
+  # The shared go.yml defines `go build -o dist/server ./cmd/server`, which
+  # only makes sense for services. Libraries verify all packages compile.
+  build:
+    command: "go build ./..."
+    inputs:
+      - "@group(go-sources)"
+      - "go.mod"
+      - "go.sum"
+    outputs: []
+    options:
+      mergeArgs: "replace"
+      mergeOutputs: "replace"
+      runInCI: true
+      cache: true
+
+  # Libraries have no entrypoint to run — neutralize the inherited task.
+  run:
+    command: "true"
+    options:
+      mergeArgs: "replace"
+      runInCI: false
+      cache: false

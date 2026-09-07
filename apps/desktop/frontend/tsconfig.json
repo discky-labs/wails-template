@@ -1,0 +1,19 @@
+{
+  "extends": "../../../tsconfig.bundler.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "types": ["vite/client"],
+    "paths": {
+      "#/*": ["./src/*"],
+      "#bindings": [
+        "./bindings/github.com/raphaeldiscky/wails-template/apps/desktop/services/index.ts"
+      ]
+    }
+  },
+  "include": ["src", "bindings", "vite.config.ts"],
+  "references": [
+    {
+      "path": "../../../libraries/ts-shared"
+    }
+  ]
+}

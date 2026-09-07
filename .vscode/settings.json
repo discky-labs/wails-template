@@ -1,0 +1,27 @@
+{
+  "yaml.schemas": {
+    "https://moonrepo.dev/schemas/v2/workspace.json": [".moon/workspace.yml"],
+    "https://moonrepo.dev/schemas/v2/toolchains.json": [".moon/toolchains.yml"],
+    "https://moonrepo.dev/schemas/v2/tasks.json": [".moon/tasks.yml", ".moon/tasks/**/*.yml"],
+    "https://moonrepo.dev/schemas/v2/project.json": ["moon.yml", "**/moon.yml"]
+  },
+  "yaml.customTags": [],
+  "redhat.telemetry.enabled": false,
+  "ansible.validation.lint.enabled": false,
+  "files.associations": {
+    ".moon/tasks/**/*.yml": "yaml",
+    "moon.yml": "yaml"
+  },
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.oxc": "explicit",
+    "source.organizeImports": "never"
+  },
+  "editor.defaultFormatter": "oxc.oxc-vscode",
+  "[javascript]": { "editor.defaultFormatter": "oxc.oxc-vscode" },
+  "[javascriptreact]": { "editor.defaultFormatter": "oxc.oxc-vscode" },
+  "[typescript]": { "editor.defaultFormatter": "oxc.oxc-vscode" },
+  "[typescriptreact]": { "editor.defaultFormatter": "oxc.oxc-vscode" },
+  "[json]": { "editor.defaultFormatter": "oxc.oxc-vscode" },
+  "[jsonc]": { "editor.defaultFormatter": "oxc.oxc-vscode" }
+}

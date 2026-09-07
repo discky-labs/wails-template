@@ -1,0 +1,66 @@
+$schema: "https://moonrepo.dev/schemas/v2/tasks.json"
+
+inheritedBy:
+  language: "typescript"
+
+fileGroups:
+  ts-sources:
+    - "src/**/*.ts"
+    - "src/**/*.tsx"
+
+tasks:
+  # Two generated trees are excluded everywhere: `bindings/**` (wails3 generate
+  # bindings) and `**/*.gen.ts` (TanStack Router's routeTree.gen.ts). Their
+  # on-disk style is whatever the generator emits — we don't reformat them, and
+  # we don't make codegen fight oxfmt on every regen.
+  format:
+    command: "pnpm exec oxfmt --write . !coverage !dist '!**/*.gen.ts' '!bindings/**'"
+    options:
+      runInCI: false
+      cache: false
+
+  format-check:
+    command: "pnpm exec oxfmt --check . !coverage !dist '!**/*.gen.ts' '!bindings/**'"
+    inputs:
+      - "@group(ts-sources)"
+      - "/.oxfmtrc.json"
+    options:
+      runInCI: true
+      cache: true
+
+  lint:
+    command: "pnpm exec oxlint ."
+    inputs:
+      - "@group(ts-sources)"
+      - "/.oxlintrc.json"
+    options:
+      runInCI: true
+      cache: true
+
+  typecheck:
+    # tsc --build in project-references mode: builds the composite libraries
+    # (d.ts-only, into their dist/) before checking the project itself. Lib
+    # sources are inputs because dependents type-depend on them through the
+    # reference. deps: ^:typecheck builds each library's declarations BEFORE
+    # dependent projects run, so parallel typechecks never race to write the
+    # same library dist/.
+    command: "pnpm exec tsc --build"
+    deps: ["^:typecheck"]
+    inputs:
+      - "@group(ts-sources)"
+      - "tsconfig.json"
+      - "/tsconfig.base.json"
+      - "/tsconfig.bundler.json"
+      - "/libraries/ts-shared/src/**/*.ts"
+      - "/libraries/ts-shared/tsconfig.json"
+    options:
+      runInCI: true
+      cache: true
+
+  test:
+    command: "pnpm exec vitest run --coverage --passWithNoTests"
+    inputs:
+      - "@group(ts-sources)"
+    options:
+      runInCI: true
+      cache: true

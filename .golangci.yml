@@ -1,0 +1,171 @@
+version: "2"
+
+run:
+  concurrency: 4
+  timeout: 10m
+  tests: true
+
+linters:
+  enable:
+    - asciicheck
+    - bodyclose
+    - dogsled
+    - dupl
+    - durationcheck
+    - errorlint
+    - exhaustive
+    - forbidigo
+    - funlen
+    - gochecknoglobals
+    - gochecknoinits
+    - gocognit
+    - goconst
+    - gocritic
+    - gocyclo
+    - godot
+    - gomodguard_v2
+    - govet
+    - ineffassign
+    - makezero
+    - misspell
+    - nakedret
+    - nestif
+    - nlreturn
+    - noctx
+    - nolintlint
+    - predeclared
+    - rowserrcheck
+    - sqlclosecheck
+    - staticcheck
+    - tparallel
+    - thelper
+    - unconvert
+    - unparam
+    - unused
+    - whitespace
+    - wsl_v5
+    - paralleltest
+    - errcheck
+    - perfsprint
+    - copyloopvar
+    - wrapcheck
+    - loggercheck
+    - nilnil
+    - reassign
+    - testifylint
+    - sloglint
+    - nilerr
+    - usetesting
+    - nilnesserr
+    - exptostd
+    - fatcontext
+    - gocheckcompilerdirectives
+    - musttag
+    - gosec
+    - cyclop
+    - revive
+  disable:
+    - godox
+
+  settings:
+    dupl:
+      threshold: 120
+    errorlint:
+      errorf: true
+    errcheck:
+      check-type-assertions: true
+      check-blank: true
+    exhaustive:
+      default-signifies-exhaustive: false
+    funlen:
+      lines: 150
+      statements: 50
+    gocognit:
+      min-complexity: 40
+    cyclop:
+      max-complexity: 20
+    gocyclo:
+      min-complexity: 15
+    goconst:
+      min-len: 2
+      min-occurrences: 2
+    gocritic:
+      enabled-tags:
+        - diagnostic
+        - experimental
+        - opinionated
+        - performance
+        - style
+      disabled-checks:
+        - dupImport
+        - unnecessaryBlock
+      settings:
+        hugeParam:
+          sizeThreshold: 128
+    forbidigo:
+      forbid:
+        - pattern: ^fmt\.Print(f|ln)?$
+          msg: use slog or the shared logger instead of fmt.Print*
+
+        - pattern: ^log\.Print(f|ln)?$
+          msg: use slog or the shared logger instead of log.Print*
+
+        - pattern: ^log\.Fatal(f|ln)?$
+          msg: return an error; only main may exit explicitly
+
+        - pattern: ^log\.Panic(f|ln)?$
+          msg: return an error instead of panicking
+
+        - pattern: ^print(ln)?$
+          msg: use slog or the shared logger instead of print/println
+
+        - pattern: ^spew\.(ConfigState\.)?Dump$
+          msg: use structured slog fields instead of spew.Dump
+    misspell:
+      locale: US
+    nestif:
+      min-complexity: 4
+    revive:
+      enable-all-rules: true
+      rules:
+        - name: cyclomatic
+          disabled: true
+        - name: function-length
+          disabled: true
+        - name: cognitive-complexity
+          disabled: true
+        - name: line-length-limit
+          disabled: true
+        - name: package-comments
+          disabled: true
+        - name: unused-parameter
+          disabled: true
+        - name: unused-receiver
+          disabled: true
+        - name: add-constant
+          disabled: true
+    nolintlint:
+      require-explanation: true
+      require-specific: true
+
+formatters:
+  enable:
+    - gci
+    - gofmt
+    - gofumpt
+    - goimports
+    - golines
+  settings:
+    gci:
+      sections:
+        - standard
+        - default
+        - prefix(github.com/raphaeldiscky/wails-template)
+        - blank
+        - dot
+        - alias
+        - localmodule
+      no-inline-comments: true
+      no-prefix-comments: true
+      custom-order: true
+      no-lex-order: true

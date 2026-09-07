@@ -1,0 +1,15 @@
+{
+	"fixed": {
+		"file_version": "0.0.1"
+	},
+	"info": {
+		"0000": {
+			"ProductVersion": "0.0.1",
+			"CompanyName": "Raphael Discky",
+			"FileDescription": "Wails v3 + Go + React desktop template",
+			"LegalCopyright": "(c) 2026, Raphael Discky",
+			"ProductName": "Desktop",
+			"Comments": "Generated from wails-template"
+		}
+	}
+}

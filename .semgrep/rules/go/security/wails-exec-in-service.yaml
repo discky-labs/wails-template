@@ -1,0 +1,20 @@
+rules:
+  - id: go-wails-exec-in-service
+    languages: [go]
+    severity: WARNING
+    message: >-
+      Process execution inside a bound Wails service. Every exported method here
+      is callable from the frontend, which is untrusted input — the same trust
+      boundary as an HTTP handler. A path or argument that reaches exec from a
+      method parameter is a command-injection sink. If you genuinely need to
+      launch something, prefer `app.Browser.OpenURL` / the Dialog manager, or
+      validate against an allowlist in a helper that takes no frontend string
+      directly. See .claude/skills/wails/SKILL.md.
+    paths:
+      # Scan-root-relative (`apps libraries`), so no leading `apps/`.
+      include:
+        - "**/services/**"
+    patterns:
+      - pattern-either:
+          - pattern: exec.Command(...)
+          - pattern: exec.CommandContext(...)

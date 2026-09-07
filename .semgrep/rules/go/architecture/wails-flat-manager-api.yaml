@@ -1,0 +1,19 @@
+rules:
+  - id: go-wails-flat-manager-api
+    languages: [go]
+    severity: ERROR
+    message: >-
+      Pre-Manager Wails v3 API. During the v3 alphas these were flat methods on
+      the app; they now hang off managers. Use `app.Window.NewWithOptions(...)`,
+      `app.Window.New()`, `app.Event.On(...)`, `app.Menu.New()` and
+      `app.SystemTray.New()`. Older tutorials — and LLM training data — are full
+      of the flat form, so this is easy to reintroduce by accident.
+      See .claude/skills/wails/SKILL.md.
+    patterns:
+      - pattern-either:
+          - pattern: $APP.NewWebviewWindow(...)
+          - pattern: $APP.NewWebviewWindowWithOptions(...)
+          - pattern: $APP.OnEvent(...)
+          - pattern: $APP.OnApplicationEvent(...)
+          - pattern: $APP.NewMenu(...)
+          - pattern: $APP.NewSystemTray(...)

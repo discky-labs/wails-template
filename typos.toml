@@ -1,0 +1,32 @@
+[default]
+# Trace ids, span ids and content hashes are hex, and hex spells words:
+# `00f067aa0ba902b7` contains "ba", which typos reads as `by`/`be`. Ignoring
+# the PATTERN rather than the files that carry it keeps real prose typos in
+# the same document checked — docs/architecture/distributed-tracing-flow.md
+# is mostly prose and only incidentally full of span ids.
+#
+# 8+ chars is the guard: no English word of that length is spelled from
+# [0-9a-f] alone, so this cannot mask a genuine misspelling.
+extend-ignore-re = ["\\b[0-9a-f]{8,}\\b"]
+
+[default.extend-words]
+# Leetspeak in password fixtures (e.g. "Sup3r$ecretPass1") — $ecret is the
+# intentional substitution, not a misspelling of "secret".
+ecret = "ecret"
+# Unicode general-category escape \p{Nd} = decimal digit; not "And".
+Nd = "Nd"
+
+[files]
+# go.{mod,sum} hold pseudo-versions and content hashes (e.g.
+# v0.3.1-0.20240121214520-5f936abd7ae8) that look like typos to the
+# checker. Lockfile-style content; inspect via `go mod tidy`.
+extend-exclude = [
+  "node_modules",
+  "pnpm-lock.yaml",
+  "dist",
+  "**/go.mod",
+  "**/go.sum",
+  "**/*.gen.go",
+  "*_test.go",
+  "**/*.test.ts",
+]
