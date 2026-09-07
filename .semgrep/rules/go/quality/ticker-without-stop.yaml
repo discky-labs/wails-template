@@ -1,0 +1,19 @@
+rules:
+  - id: go-ticker-without-stop
+    languages: [go]
+    severity: ERROR
+    message: >-
+      time.NewTicker without a matching Stop in the same function. A ticker holds
+      a runtime timer until stopped, so this leaks for the life of the process —
+      the exact shape the Wails performance guide names as a memory leak. Add
+      `defer ticker.Stop()`. See .claude/rules/go/performance-and-concurrency.md.
+    patterns:
+      - pattern: $T := time.NewTicker(...)
+      - pattern-not-inside: |
+          $T := time.NewTicker(...)
+          ...
+          defer $T.Stop()
+      - pattern-not-inside: |
+          $T := time.NewTicker(...)
+          ...
+          $T.Stop()

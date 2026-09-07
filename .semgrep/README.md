@@ -76,12 +76,18 @@ domain testable as ordinary Go.
 
 **quality** — idioms whose failure mode is silent
 
-| Rule id                                | Catches                                   |
-| -------------------------------------- | ----------------------------------------- |
-| `go-wails-embed-missing-all-prefix`    | `//go:embed frontend/dist` without `all:` |
-| `go-wails-service-registered-by-value` | `NewService(Svc{})` instead of `&Svc{}`   |
+| Rule id                                | Catches                                          |
+| -------------------------------------- | ------------------------------------------------ |
+| `go-wails-embed-missing-all-prefix`    | `//go:embed frontend/dist` without `all:`        |
+| `go-wails-service-registered-by-value` | `NewService(Svc{})` instead of `&Svc{}`          |
+| `go-ticker-without-stop`               | `time.NewTicker` with no `Stop` in that function |
 
-Both ship broken apps that pass every other check. Without `all:`, Go skips
+`go-ticker-without-stop` catches a ticker that holds a runtime timer for the life of the
+process. `apps/desktop/services/clock.go` is the compliant shape (`defer ticker.Stop()`),
+and the rule was proven both ways: zero findings on the real tree, and it fires on a
+violation planted at a real path.
+
+The other two ship broken apps that pass every other check. Without `all:`, Go skips
 files starting with `.` or `_` — exactly what a bundler emits — so the app
 builds, runs, and serves a blank window in production while working in dev.
 A service registered by value has its methods called on a copy, so state is

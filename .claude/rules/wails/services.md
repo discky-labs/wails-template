@@ -19,6 +19,13 @@ Enforced by Semgrep `go-wails-application-import-containment`:
 - ❌ No `libraries/**` file importing `pkg/application`. If a library needs to
   reach the UI, return a value or an error and let the service translate it.
 
+## One service, one purpose
+
+❌ **No god service.** A single type with `SaveFile`, `GetUser` and `ProcessPayment` on it
+is the anti-pattern the Wails bindings best-practices page opens with. Split by
+responsibility — `FileService`, `UserService`, `PaymentService` — and name methods for the
+action they take (`SaveDocument`, not `Do`).
+
 ## Registration
 
 - **Register pointers**: `application.NewService(&DemoService{})`. By value,
@@ -26,7 +33,12 @@ Enforced by Semgrep `go-wails-application-import-containment`:
   pointer-receiver methods are not bound at all. Enforced by Semgrep
   `go-wails-service-registered-by-value`.
 - Dependencies go in through plain constructors
-  (`application.NewService(NewNoteService(db))`). **No DI framework.**
+  (`application.NewService(NewNoteService(db))`). **No DI framework** — the architecture
+  guide suggests Wire; this repo does not use it.
+- **A service that emits events needs the app itself**, which cannot be referenced inside
+  `application.Options`. Register it after construction:
+  `app.RegisterService(application.NewService(NewClockService(app)))` —
+  `apps/desktop/services/clock.go` is the example.
 - Services are **singletons shared across every window**. Guard mutable state
   with a mutex.
 

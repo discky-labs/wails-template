@@ -165,20 +165,26 @@ enforceable version of this README. They are auto-loaded by Claude Code, but
 they are written for humans too — each states what not to do and why, and names
 the check that enforces it.
 
-| Rule                                                                   | Covers                                             | Enforced by                                                  |
-| ---------------------------------------------------------------------- | -------------------------------------------------- | ------------------------------------------------------------ |
-| [`wails/v3-only.md`](.claude/rules/wails/v3-only.md)                   | v3 is the only target; the v2 constructs to reject | Semgrep `go-wails-v2-api-in-v3`, `go-wails-flat-manager-api` |
-| [`wails/services.md`](.claude/rules/wails/services.md)                 | Service shape, registration, trust boundary        | Semgrep + golangci-lint                                      |
-| [`wails/bindings.md`](.claude/rules/wails/bindings.md)                 | Generated bindings and the Go↔TS boundary          | CI `codegen-drift` job                                       |
-| [`wails/build-and-dev.md`](.claude/rules/wails/build-and-dev.md)       | moon is the task runner; build and dev contracts   | `moon ci`, the 3-OS matrix                                   |
-| [`frontend/design-tokens.md`](.claude/rules/frontend/design-tokens.md) | Every colour in one folder; the two-layer palette  | `moon run root:check-design-tokens`                          |
+| Rule                                                                                   | Covers                                                    | Enforced by                                                  |
+| -------------------------------------------------------------------------------------- | --------------------------------------------------------- | ------------------------------------------------------------ |
+| [`wails/v3-only.md`](.claude/rules/wails/v3-only.md)                                   | v3 is the only target; the v2 constructs to reject        | Semgrep `go-wails-v2-api-in-v3`, `go-wails-flat-manager-api` |
+| [`wails/services.md`](.claude/rules/wails/services.md)                                 | Service shape, registration, trust boundary               | Semgrep + golangci-lint                                      |
+| [`wails/bindings.md`](.claude/rules/wails/bindings.md)                                 | Generated bindings and the Go↔TS boundary                 | CI `codegen-drift` job                                       |
+| [`wails/build-and-dev.md`](.claude/rules/wails/build-and-dev.md)                       | moon is the task runner; build and dev contracts          | `moon ci`, the 3-OS matrix                                   |
+| [`frontend/design-tokens.md`](.claude/rules/frontend/design-tokens.md)                 | Every colour in one folder; the two-layer palette         | `moon run root:check-design-tokens`                          |
+| [`go/performance-and-concurrency.md`](.claude/rules/go/performance-and-concurrency.md) | Measure first; batch over goroutines; goroutine ownership | `go test -race`, review                                      |
+| [`structure.md`](.claude/rules/structure.md)                                           | Folder and file layout; when code earns a library         | review                                                       |
 
 ## More
 
 - [`.semgrep/README.md`](.semgrep/README.md) — the static-analysis suite: six
   Wails v3 rules, each with a fixture
+- [`.claude/skills/README.md`](.claude/skills/README.md) — the rule-versus-skill split:
+  a rule changes a decision, a skill shows how
 - [`.claude/skills/wails/SKILL.md`](.claude/skills/wails/SKILL.md) — the fuller
   Wails v3 reference, for humans and agents
+- [`.claude/skills/wails-best-practices/SKILL.md`](.claude/skills/wails-best-practices/SKILL.md)
+  — API design, performance, security, panics, profiling and traces
 - [Wails v3 docs](https://v3.wails.io)
 
 ## License

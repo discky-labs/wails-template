@@ -21,15 +21,18 @@ monorepo with proto-pinned toolchains.
 
 `.claude/rules/` is auto-loaded; these are the load-bearing ones:
 
-| Doing this                     | Read this                                 |
-| ------------------------------ | ----------------------------------------- |
-| Anything with the Wails API    | `.claude/rules/wails/v3-only.md`          |
-| Adding or changing a service   | `.claude/rules/wails/services.md`         |
-| Touching generated bindings    | `.claude/rules/wails/bindings.md`         |
-| Build, dev mode, packaging, CI | `.claude/rules/wails/build-and-dev.md`    |
-| Needing the full v3 reference  | `.claude/skills/wails/SKILL.md`           |
-| Anything involving a colour    | `.claude/rules/frontend/design-tokens.md` |
-| Adding a Semgrep rule          | `.semgrep/README.md`                      |
+| Doing this                       | Read this                                         |
+| -------------------------------- | ------------------------------------------------- |
+| Anything with the Wails API      | `.claude/rules/wails/v3-only.md`                  |
+| Adding or changing a service     | `.claude/rules/wails/services.md`                 |
+| Touching generated bindings      | `.claude/rules/wails/bindings.md`                 |
+| Build, dev mode, packaging, CI   | `.claude/rules/wails/build-and-dev.md`            |
+| Needing the full v3 reference    | `.claude/skills/wails/SKILL.md`                   |
+| Anything involving a colour      | `.claude/rules/frontend/design-tokens.md`         |
+| Adding a file, folder or project | `.claude/rules/structure.md`                      |
+| Performance, goroutines, locks   | `.claude/rules/go/performance-and-concurrency.md` |
+| Profiling, tracing, API design   | `.claude/skills/wails-best-practices/SKILL.md`    |
+| Adding a Semgrep rule            | `.semgrep/README.md`                              |
 
 ## Hard don'ts
 
@@ -67,6 +70,7 @@ moon ci                         # the full CI pipeline, locally
 moon run desktop-frontend:bindings  # regenerate Go -> TS bindings
 moon run root:semgrep               # Wails-specific static analysis
 moon run root:check-design-tokens   # one source of truth for colour
+WAILS_TRACE=1 ./apps/desktop/bin/desktop && go tool trace trace.out   # profile it
 moon query projects                 # what moon can see
 ```
 
