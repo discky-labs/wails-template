@@ -15,6 +15,7 @@ env:
   GOLANGCI_LINT_VERSION: v2.12.2
   SEMGREP_VERSION: "1.172.0"
   TYPOS_VERSION: v1.50.1
+  SQLFLUFF_VERSION: "4.2.2"
 
 jobs:
   format-lint:
@@ -92,12 +93,15 @@ jobs:
           webview: "true"
           semgrep-version: ${{ env.SEMGREP_VERSION }}
           typos-version: ${{ env.TYPOS_VERSION }}
+          sqlfluff-version: ${{ env.SQLFLUFF_VERSION }}
       - name: typos
         run: moon ci :typos
       - name: check-consistency
         run: moon ci :check-consistency
       - name: check-design-tokens
         run: moon ci :check-design-tokens
+      - name: sql-lint
+        run: moon ci :sql-lint
       - name: deadcode
         run: moon ci :deadcode
       - name: audit

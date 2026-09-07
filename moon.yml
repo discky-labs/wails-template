@@ -16,6 +16,24 @@ tasks:
       runInCI: true
       cache: true
 
+  # The only SQL here is the embedded migrations. A malformed one is not a
+  # compile error — it fails at launch on a user's machine — so it gets a gate.
+  sql-lint:
+    script: "bash ./scripts/sqlfluff.sh lint"
+    inputs:
+      - "**/*.sql"
+      - "/.sqlfluff"
+      - "scripts/sqlfluff.sh"
+    options:
+      runInCI: true
+      cache: true
+
+  sql-fix:
+    script: "bash ./scripts/sqlfluff.sh fix"
+    options:
+      runInCI: false
+      cache: false
+
   check-consistency:
     script: "pnpm exec syncpack lint && pnpm exec manypkg check"
     inputs:

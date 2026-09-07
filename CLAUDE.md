@@ -28,6 +28,7 @@ monorepo with proto-pinned toolchains.
 | Designing a bound method         | `.claude/rules/wails/api-design.md`               |
 | Errors, typed errors, panics     | `.claude/rules/go/errors.md`                      |
 | Writing a test                   | `.claude/rules/go/testing.md`                     |
+| A database, SQL or migrations    | `.claude/rules/go/persistence.md`                 |
 | Input, paths, secrets, auth      | `.claude/rules/go/security.md`                    |
 | Touching generated bindings      | `.claude/rules/wails/bindings.md`                 |
 | Build, dev mode, packaging, CI   | `.claude/rules/wails/build-and-dev.md`            |
@@ -49,6 +50,8 @@ monorepo with proto-pinned toolchains.
   Wails-free.
 - ❌ **No service registered by value** — `NewService(&Svc{})`.
 - ❌ **No hand-edits to `frontend/bindings/` or `*.gen.ts`.** Regenerate.
+- ❌ **No SQL outside `internal/repository/*_sqlite.go`.** A service gains a port
+  method, not a query. Migrations are `//go:embed`-ed and up-only.
 - ❌ **No unvalidated frontend input**, and never into `exec` or a file path.
 - ❌ **No `fmt.Print*` / `log.*`** (forbidigo) and no `init()` (gochecknoinits)
   — use `slog`.
@@ -73,6 +76,7 @@ moon ci                         # the full CI pipeline, locally
 moon run desktop-frontend:bindings  # regenerate Go -> TS bindings
 moon run root:semgrep               # Wails-specific static analysis
 moon run root:check-design-tokens   # one source of truth for colour
+moon run root:sql-lint              # sqlfluff over the embedded migrations
 WAILS_TRACE=1 ./apps/desktop/bin/desktop && go tool trace trace.out   # profile it
 moon query projects                 # what moon can see
 ```

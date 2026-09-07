@@ -29,6 +29,9 @@ Enforced by Semgrep `go-wails-application-import-containment`:
   (`application.NewService(NewNoteService(db))`). **No DI framework** — the upstream
   architecture guide suggests Wire; this repo does not use it. "Inject dependencies" here
   means a constructor parameter, nothing more.
+- **A service that needs data takes `repository.DataStore`**, never a `*sql.DB` and never a
+  concrete adapter. It holds no SQL and opens no transaction of its own —
+  `go/persistence.md` owns that boundary; `services/notes.go` is the example.
 - **A service that emits events needs the app itself**, which cannot be referenced inside
   `application.Options`. Register it after construction:
   `app.RegisterService(application.NewService(NewClockService(app)))` —

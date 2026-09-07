@@ -28,6 +28,21 @@ section 7.
   three platforms. A binary that compiles can still die on a missing webview library or a
   failed `ServiceStartup`, and only running it catches that.
 
+## Persistence — a real store in a temp dir, no container
+
+- ✅ **Use the real database, in `t.TempDir()`.** `repository.Open` on a temp file is fast
+  enough to need no build tag and no testcontainer, so these stay ordinary unit tests that
+  everyone runs. `internal/repository/note_sqlite_test.go` is the example.
+- ✅ **Not `:memory:`.** It behaves differently under WAL and across pooled connections
+  than the file the app actually ships with.
+- ✅ **Cover the four things a repository can get wrong**, all in that file: migrations are
+  idempotent across a reopen, a missing row is the entity sentinel and not
+  `sql.ErrNoRows`, `Atomic` rolls back _and_ sees its own writes, and paging visits every
+  row exactly once.
+- ✅ **Prove a test fails before trusting it.** Break the thing it guards, watch it go red,
+  put it back. Two comments in this repo — the fixed-width timestamp and the single-clamp
+  rule — are claims that were verified exactly this way, and one of them found a real bug.
+
 ## Concurrency is tested, not assumed
 
 - ✅ **`-race` is the gate** — `.moon/tasks/go.yml` runs `go test -race -cover ./...`.

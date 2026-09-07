@@ -1,0 +1,21 @@
+# sqlfluff config. Borrowed from monorepo-template, with two deliberate changes.
+[sqlfluff]
+# sqlite, NOT postgres. The migrations here run against the SQLite the desktop
+# app embeds, and the dialects differ where it matters: STRICT tables and
+# PRAGMA are SQLite-only, and a postgres dialect would reject them.
+dialect = sqlite
+
+# raw, NOT jinja. These files are plain SQL read by //go:embed at compile time —
+# there is no templating layer and no operator running them through one. The
+# jinja templater would look for {{ }} / {% %} that never appear and can turn a
+# stray brace in a comment into a template error.
+templater = raw
+
+max_line_length = 130
+
+[sqlfluff:rules]
+# Per-rule overrides go here, each with a reason.
+#
+# There are none, and that is the point — the same standard the design-token
+# checker holds. A finding is a thing to fix, not a backlog item, so the first
+# migration was reformatted to satisfy the defaults rather than silencing them.

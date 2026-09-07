@@ -23,6 +23,10 @@ inputs:
   semgrep-version:
     description: semgrep pip version. Installed only when set.
     required: false
+  sqlfluff-version:
+    description: sqlfluff pip version. Installed only when set.
+    required: false
+
   typos-version:
     description: typos release tag (e.g. v1.50.1). Installed only when set.
     required: false
@@ -106,18 +110,30 @@ runs:
         chmod +x "$HOME/.local/bin/typos"
         echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
-    - name: Cache pip wheels (semgrep)
-      if: inputs.semgrep-version != ''
+    # ONE cache step for every pip tool, not one per tool. They all share
+    # ~/.cache/pip, and two actions/cache steps pointed at the same path in the
+    # same job race to save it — the second logs a "cache already exists"
+    # warning and the entry that wins is arbitrary. The key carries every
+    # version so adding a tool still invalidates it.
+    - name: Cache pip wheels
+      if: inputs.semgrep-version != '' || inputs.sqlfluff-version != ''
       uses: actions/cache@v5
       with:
         path: ~/.cache/pip
-        key: pip-${{ runner.os }}-semgrep-${{ inputs.semgrep-version }}
+        key: pip-${{ runner.os }}-semgrep-${{ inputs.semgrep-version }}-sqlfluff-${{ inputs.sqlfluff-version }}
 
     - name: Install semgrep
       if: inputs.semgrep-version != ''
       shell: bash
       run: |
         pip install --user "semgrep==${{ inputs.semgrep-version }}"
+        echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+    - name: Install sqlfluff
+      if: inputs.sqlfluff-version != ''
+      shell: bash
+      run: |
+        pip install --user "sqlfluff==${{ inputs.sqlfluff-version }}"
         echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
     - name: Cache Go modules
