@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { DivideForm } from "#/components/divide-form.tsx";
 import { GreetForm } from "#/components/greet-form.tsx";
+import { NotesPanel } from "#/components/notes-panel.tsx";
 import { ThemeSelect } from "#/components/theme-select.tsx";
 import { env } from "#/env.ts";
 import { useGoClock } from "#/hooks/use-go-clock.ts";
@@ -30,6 +31,7 @@ function Home() {
       <GreetForm />
       <DivideForm />
       <ThemeSelect />
+      <NotesPanel />
 
       <footer className="text-sm text-muted-foreground">
         Event from Go: <span className="font-mono">{time}</span>
