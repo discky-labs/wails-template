@@ -21,14 +21,15 @@ monorepo with proto-pinned toolchains.
 
 `.claude/rules/` is auto-loaded; these are the load-bearing ones:
 
-| Doing this                     | Read this                              |
-| ------------------------------ | -------------------------------------- |
-| Anything with the Wails API    | `.claude/rules/wails/v3-only.md`       |
-| Adding or changing a service   | `.claude/rules/wails/services.md`      |
-| Touching generated bindings    | `.claude/rules/wails/bindings.md`      |
-| Build, dev mode, packaging, CI | `.claude/rules/wails/build-and-dev.md` |
-| Needing the full v3 reference  | `.claude/skills/wails/SKILL.md`        |
-| Adding a Semgrep rule          | `.semgrep/README.md`                   |
+| Doing this                     | Read this                                 |
+| ------------------------------ | ----------------------------------------- |
+| Anything with the Wails API    | `.claude/rules/wails/v3-only.md`          |
+| Adding or changing a service   | `.claude/rules/wails/services.md`         |
+| Touching generated bindings    | `.claude/rules/wails/bindings.md`         |
+| Build, dev mode, packaging, CI | `.claude/rules/wails/build-and-dev.md`    |
+| Needing the full v3 reference  | `.claude/skills/wails/SKILL.md`           |
+| Anything involving a colour    | `.claude/rules/frontend/design-tokens.md` |
+| Adding a Semgrep rule          | `.semgrep/README.md`                      |
 
 ## Hard don'ts
 

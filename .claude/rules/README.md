@@ -9,13 +9,17 @@ manager list, the dev-mode contract — lives in
 [`.claude/skills/wails/SKILL.md`](../skills/wails/SKILL.md), which loads
 on-demand. Prefer a pointer here over a paraphrase.
 
-Several rules are mechanically enforced by the Semgrep suite in
-[`.semgrep/`](../../.semgrep/README.md); those name their rule id so a
-violation is traceable from CI output back to the reason.
+Several rules are mechanically enforced — by the Semgrep suite in
+[`.semgrep/`](../../.semgrep/README.md) or by a check script — and those name
+the rule id or task so a CI failure is traceable back to the reason.
 
-| File                     | Covers                                             |
-| ------------------------ | -------------------------------------------------- |
-| `wails/v3-only.md`       | v3 is the only target; the v2 constructs to reject |
-| `wails/services.md`      | Service shape, registration, trust boundary        |
-| `wails/bindings.md`      | Generated bindings and the Go↔TS boundary          |
-| `wails/build-and-dev.md` | moon is the task runner; build and dev contracts   |
+Rules are grouped by topic folder, so a second app or a backend concern lands
+beside its peers rather than in a flat list.
+
+| File                        | Covers                                             |
+| --------------------------- | -------------------------------------------------- |
+| `wails/v3-only.md`          | v3 is the only target; the v2 constructs to reject |
+| `wails/services.md`         | Service shape, registration, trust boundary        |
+| `wails/bindings.md`         | Generated bindings and the Go↔TS boundary          |
+| `wails/build-and-dev.md`    | moon is the task runner; build and dev contracts   |
+| `frontend/design-tokens.md` | Every colour in one folder; the two-layer palette  |

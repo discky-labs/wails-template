@@ -156,13 +156,29 @@ the script listed as a task input so a script edit invalidates the cache.
   (`--background`, `--border`) alias them. Components name roles, never
   literals and never raw Tailwind palette utilities. `main.go`'s window
   background is checked against `--background`, because it is painted before
-  the webview loads. See `.claude/rules/design-tokens.md`.
+  the webview loads. See `.claude/rules/frontend/design-tokens.md`.
+
+## Conventions index
+
+The rules under [`.claude/rules/`](.claude/rules/README.md) are the short,
+enforceable version of this README. They are auto-loaded by Claude Code, but
+they are written for humans too — each states what not to do and why, and names
+the check that enforces it.
+
+| Rule                                                                   | Covers                                             | Enforced by                                                  |
+| ---------------------------------------------------------------------- | -------------------------------------------------- | ------------------------------------------------------------ |
+| [`wails/v3-only.md`](.claude/rules/wails/v3-only.md)                   | v3 is the only target; the v2 constructs to reject | Semgrep `go-wails-v2-api-in-v3`, `go-wails-flat-manager-api` |
+| [`wails/services.md`](.claude/rules/wails/services.md)                 | Service shape, registration, trust boundary        | Semgrep + golangci-lint                                      |
+| [`wails/bindings.md`](.claude/rules/wails/bindings.md)                 | Generated bindings and the Go↔TS boundary          | CI `codegen-drift` job                                       |
+| [`wails/build-and-dev.md`](.claude/rules/wails/build-and-dev.md)       | moon is the task runner; build and dev contracts   | `moon ci`, the 3-OS matrix                                   |
+| [`frontend/design-tokens.md`](.claude/rules/frontend/design-tokens.md) | Every colour in one folder; the two-layer palette  | `moon run root:check-design-tokens`                          |
 
 ## More
 
-- [`.semgrep/README.md`](.semgrep/README.md) — the static-analysis suite
-- [`.claude/skills/wails/SKILL.md`](.claude/skills/wails/SKILL.md) — Wails v3
-  reference for humans and agents
+- [`.semgrep/README.md`](.semgrep/README.md) — the static-analysis suite: six
+  Wails v3 rules, each with a fixture
+- [`.claude/skills/wails/SKILL.md`](.claude/skills/wails/SKILL.md) — the fuller
+  Wails v3 reference, for humans and agents
 - [Wails v3 docs](https://v3.wails.io)
 
 ## License
