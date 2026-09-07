@@ -79,3 +79,8 @@ apps/desktop/build/windows/nsis/MicrosoftEdgeWebview2Setup.exe
 apps/desktop/build/ios/
 apps/desktop/build/android/
 *.syso
+
+# Local env. `.env.example` is committed as the template; real values are not.
+.env
+.env.*
+!.env.example
