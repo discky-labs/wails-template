@@ -6,6 +6,10 @@ inheritedBy:
 fileGroups:
   go-sources:
     - "**/*.go"
+    # Embedded SQL counts as a Go source. Migrations reach the binary through
+    # //go:embed, so editing one changes what `build` and `test` produce — but
+    # moon would serve a cached result if it only hashed *.go.
+    - "**/*.sql"
     - "!vendor/**"
 
 tasks:

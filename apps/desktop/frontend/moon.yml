@@ -50,6 +50,11 @@ tasks:
       - "vite.config.ts"
       - "tsconfig.json"
       - "package.json"
+      # VITE_* values are inlined into dist/ at build time, so a .env edit
+      # changes the output and must miss the cache. The example is only a
+      # template, so it is excluded.
+      - ".env*"
+      - "!.env.example"
     outputs:
       - "dist/**/*"
     options:

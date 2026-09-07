@@ -40,6 +40,9 @@ tasks:
     deps: ["desktop-frontend:build"]
     inputs:
       - "**/*.go"
+      # internal/repository/migrations/*.up.sql is //go:embed-ed into the
+      # binary; without this a migration edit would hit the build cache.
+      - "**/*.sql"
       - "go.mod"
       - "go.sum"
       - "/scripts/wails-build.sh"
