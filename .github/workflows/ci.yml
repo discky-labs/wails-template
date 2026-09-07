@@ -100,6 +100,18 @@ jobs:
         run: moon ci :check-consistency
       - name: check-design-tokens
         run: moon ci :check-design-tokens
+      # `//go:embed all:frontend/dist` fails to COMPILE when the directory is
+      # absent, so this placeholder has to stay tracked or `go build`, `go test`
+      # and golangci-lint all break on a fresh clone.
+      #
+      # It cannot be guarded with a moon input. moon drops a MISSING input from
+      # the hash rather than treating its absence as a change, so deleting this
+      # file leaves desktop:test and desktop:lint as cache hits and CI reports
+      # green on a tree nobody can build — which is precisely how its absence
+      # went unnoticed. (Verified: editing its contents does invalidate; only
+      # deletion is invisible.) So assert it against git, which cannot be cached.
+      - name: embed placeholder is tracked
+        run: git ls-files --error-unmatch apps/desktop/frontend/dist/.gitkeep
       - name: sql-lint
         run: moon ci :sql-lint
       - name: deadcode
