@@ -30,5 +30,6 @@ it shows how it is a skill.
 | `go/performance-and-concurrency.md` | Measure first; bridge crossings; goroutine ownership |
 | `go/errors.md`                      | Error wrapping, typed errors, retry, panics          |
 | `go/security.md`                    | Trust boundary, paths, secrets, auth, rate limiting  |
+| `go/persistence.md`                 | Ports, SQL, transactions, migrations, cursor paging  |
 | `go/testing.md`                     | Unit / integration / mock tiers; `-race` as the gate |
 | `frontend/design-tokens.md`         | Every colour in one folder; the two-layer palette    |

@@ -22,6 +22,36 @@ moon run desktop-frontend:bindings
 - ✅ **Write good Go doc comments** — they carry through into the generated
   TSDoc and are what the frontend author reads.
 
+## A bound method takes `ctx context.Context` first
+
+Wails **injects** it, and the generator **drops it from the TS signature**:
+
+```go
+func (s *NotesService) Add(ctx context.Context, title, body string) (entity.Note, error)
+```
+
+```ts
+Add(title: string, body: string): $CancellablePromise<entity.Note>
+```
+
+- ✅ **Take a ctx on any method that does I/O.** It is the frontend promise's cancellation,
+  so a query stops when the caller stops waiting — and it is what makes the generated
+  return a `$CancellablePromise`. Free, and correct.
+- ✅ It must be the **first** parameter. `bindings.go` only sets `needsContext` for
+  parameter 0; anywhere else it becomes a real argument the frontend has to pass.
+- ❌ Don't store a ctx on the service struct to avoid the parameter. `ServiceStartup`'s ctx
+  is the app lifetime, not the call's.
+
+## Go is the source of truth, so codegen runs one way only
+
+The Go signature **is** the contract; TS is derived from it. That is the opposite of a
+spec-first HTTP service, and it is why there is no OpenAPI document here and no
+`oapi-codegen` in server mode — there is no HTTP API to serve. Adding one would mean
+inventing a transport purely to have something to generate from.
+
+`oapi-codegen` is the right tool in `generate: client` mode when this app calls a **remote**
+service; see `go/persistence.md`.
+
 ## Ownership: the frontend project owns generation
 
 The `bindings` task belongs to the **`desktop-frontend`** moon project, not the

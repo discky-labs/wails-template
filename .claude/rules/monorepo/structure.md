@@ -36,7 +36,11 @@ apps/desktop/
 ├── services/          one file per service, named after it
 │   ├── clock.go
 │   ├── demo.go
+│   ├── notes.go
 │   └── preferences.go
+├── internal/          app-private, not importable from outside
+│   ├── entity/        stored shapes + their sentinel errors
+│   └── repository/    ports, adapters, SQL and migrations
 └── build/             wails3-owned; do not hand-edit generated parts
 ```
 
@@ -44,6 +48,14 @@ apps/desktop/
   `PreferencesService`). Why one service per concern is `wails/api-design.md`.
 - **`main.go` wires, it does not implement.** If logic is accumulating there, it is a
   service. The `ClockService` extraction is precisely this move.
+- **`main()` translates an error into an exit status; `run()` does the work.** `os.Exit`
+  does not run deferred functions, so cleanup written next to an `os.Exit` never happens.
+  Keeping the only `os.Exit` in `main` means every defer in `run` is honored.
+- **`internal/` holds what only this app may import**, and grows a folder per layer rather
+  than a file per concept. `go/persistence.md` owns its contents.
+- **There is no `handler/` layer.** In a Wails app the bound service _is_ the handler — it
+  validates, calls inward, and maps errors. A microservice separates the two because a
+  transport exists to separate; here there is none.
 - **Domain types live with the domain**, in the library that owns them — not in a shared
   `models/` bucket. A `models/` folder that every service imports becomes the coupling
   it was meant to prevent. (The architecture guide shows `models/`; at monorepo scale a
