@@ -60,9 +60,12 @@ tasks:
     inputs:
       - "/scripts/smoke.sh"
     options:
-      # Launches a GUI process; only meaningful on a runner with a display
-      # (CI supplies Xvfb on Linux). Invoked explicitly by the workflow.
-      runInCI: false
+      # MUST be true even though only the workflow calls it: moon's CI mode
+      # filters out runInCI:false tasks even when they are targeted directly,
+      # so `moon run desktop:smoke` in CI failed with "No tasks found".
+      # Safe to enable — CI never targets `:smoke` and nothing depends on it,
+      # so `moon ci` cannot pull it into a job that has no display.
+      runInCI: true
       cache: false
 
   package:

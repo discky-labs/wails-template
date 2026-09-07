@@ -47,6 +47,26 @@ runs:
       shell: bash
       run: proto install --yes
 
+    # Windows only. proto ships a *trimmed* `go` there which cannot infer GOROOT
+    # from its own location, and `.prototools` unsets GOROOT because it must
+    # (an inherited GOROOT otherwise wins and mismatches the pinned toolchain —
+    # see the comment in that file). The shim therefore handed `go` an empty
+    # GOROOT and every Windows job died in setup with:
+    #   go: cannot find GOROOT directory: 'go' binary is trimmed and GOROOT is not set
+    #
+    # Resolving the real binary and putting its directory FIRST on PATH bypasses
+    # the shim, so the unset never applies, and GOROOT is exported explicitly.
+    - name: Point Windows at proto's Go directly
+      if: runner.os == 'Windows'
+      shell: bash
+      run: |
+        gobin="$(proto bin go | tr -d '\r')"
+        godir="$(dirname "$gobin")"
+        goroot="$(dirname "$godir")"
+        echo "GOROOT=$goroot" >> "$GITHUB_ENV"
+        echo "$godir" >> "$GITHUB_PATH"
+        echo "resolved GOROOT=$goroot"
+
     # Wails links GTK4 + WebKitGTK 6.0 on Linux. Without these, cgo fails at
     # compile time — this is not an optional runtime dependency.
     - name: Install webview libraries (Linux)

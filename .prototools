@@ -13,5 +13,16 @@ moon = "2.5.3"
 detect-strategy = "only-prototools"
 
 [tools.go.env]
+# Both are unset so a machine-level gvm/asdf/homebrew export cannot fight the
+# pinned toolchain. Removing GOROOT was tried and reverted: proto does not set
+# GOROOT itself, it only unsets it, so without this line an inherited
+# GOROOT wins and every build dies with
+#   compile: version "go1.26.4" does not match go tool version "go1.26.6"
+#
+# The cost is Windows: proto ships a *trimmed* `go` there which cannot infer
+# GOROOT, so an unset GOROOT breaks it. `.github/actions/setup-ci` compensates
+# by resolving the real binary on that platform only — see the comment there.
+# (Setting GOROOT to the tool dir from here does not work: proto ignores
+# ${TOOL_DIR}, ${PROTO_TOOL_DIR} and ${PROTO_HOME}-based values alike.)
 GOPATH = false
 GOROOT = false
