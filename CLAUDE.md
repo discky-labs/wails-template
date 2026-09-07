@@ -25,9 +25,12 @@ monorepo with proto-pinned toolchains.
 | -------------------------------- | ------------------------------------------------- |
 | Anything with the Wails API      | `.claude/rules/wails/v3-only.md`                  |
 | Adding or changing a service     | `.claude/rules/wails/services.md`                 |
+| Designing a bound method         | `.claude/rules/wails/api-design.md`               |
+| Errors, typed errors, panics     | `.claude/rules/go/errors.md`                      |
+| Writing a test                   | `.claude/rules/go/testing.md`                     |
+| Input, paths, secrets, auth      | `.claude/rules/go/security.md`                    |
 | Touching generated bindings      | `.claude/rules/wails/bindings.md`                 |
 | Build, dev mode, packaging, CI   | `.claude/rules/wails/build-and-dev.md`            |
-| Needing the full v3 reference    | `.claude/skills/wails/SKILL.md`                   |
 | Anything involving a colour      | `.claude/rules/frontend/design-tokens.md`         |
 | Adding a file, folder or project | `.claude/rules/structure.md`                      |
 | Performance, goroutines, locks   | `.claude/rules/go/performance-and-concurrency.md` |

@@ -143,6 +143,16 @@ silently discarded and pointer-receiver methods are not bound at all.
   absence of `all:`.
 - **A pattern containing `: ` breaks the YAML scanner.** Quote it:
   `- pattern: "application.Options{..., Bind: $B, ...}"`.
+- **`go-ticker-without-stop` only matches `$T := time.NewTicker(...)`.** Missing
+  `s.ticker = time.NewTicker(…)` is deliberate and correct: a service that stops its
+  ticker in `ServiceShutdown` stops it in a _different function_, so matching that form
+  would fire on the right pattern. The gap it does leave is a local that is then stored —
+  `ticker := time.NewTicker(…); s.ticker = ticker` — which **would** be a false positive.
+  If that shape appears, narrow the rule rather than widening the allowlist.
+- **`Cannot allocate memory io_uring_queue_init` is a machine limit, not a broken rule.**
+  semgrep's parallel engine locks memory per worker; a low `ulimit -l` (8 MB here) makes it
+  fail while `--jobs 1` runs the identical rules fine. Confirm with
+  `semgrep --config .semgrep/rules --jobs 1 apps libraries` before suspecting your YAML.
 - **OSS taint mode is intra-procedural.** Source and sink must be in the same
   function; interprocedural analysis needs Semgrep Pro.
 

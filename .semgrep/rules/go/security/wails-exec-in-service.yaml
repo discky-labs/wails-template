@@ -9,7 +9,7 @@ rules:
       method parameter is a command-injection sink. If you genuinely need to
       launch something, prefer `app.Browser.OpenURL` / the Dialog manager, or
       validate against an allowlist in a helper that takes no frontend string
-      directly. See .claude/skills/wails/SKILL.md.
+      directly. See .claude/rules/go/security.md.
     paths:
       # Scan-root-relative (`apps libraries`), so no leading `apps/`.
       include:

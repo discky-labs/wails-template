@@ -9,7 +9,7 @@ rules:
       `Services: []application.Service{application.NewService(&Svc{})}` rather
       than `Bind: []any{...}`. Blending the two is the most common Wails
       failure mode: it either fails to compile or silently binds nothing.
-      See .claude/skills/wails/SKILL.md.
+      See .claude/rules/wails/v3-only.md.
     patterns:
       - pattern-either:
           # A regex, not an import pattern: semgrep reports a grouped

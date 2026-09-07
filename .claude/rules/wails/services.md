@@ -1,46 +1,38 @@
 # Rule: Wails services
 
-A service is a plain struct whose **exported methods are callable from the
-frontend**. Registered in `application.Options.Services`, they live in
-`apps/desktop/services/`.
+A service is a plain struct whose **exported methods are callable from the frontend**.
+Registered in `application.Options.Services`, they live in `apps/desktop/services/`.
+
+This rule owns the **shape and lifecycle** of a service. Its API surface is
+`wails/api-design.md`; input validation and secrets are `go/security.md`.
 
 ## Thin adapters over Wails-free code
 
-Domain logic lives in `libraries/` and **imports no Wails package**, so it is
-testable as ordinary Go. A service validates input, calls into a library, and
-maps the result. `libraries/core` + `apps/desktop/services/demo.go` are the
-worked example.
+Domain logic lives in `libraries/` and **imports no Wails package**, so it is testable as
+ordinary Go. A service validates input, calls into a library, and maps the result.
+`libraries/core` + `apps/desktop/services/demo.go` are the worked example.
 
 Enforced by Semgrep `go-wails-application-import-containment`:
 `github.com/wailsapp/wails/v3/pkg/application` must not be imported outside
 `apps/desktop/`.
 
 - ❌ No domain logic in a service method body beyond validation and mapping.
-- ❌ No `libraries/**` file importing `pkg/application`. If a library needs to
-  reach the UI, return a value or an error and let the service translate it.
-
-## One service, one purpose
-
-❌ **No god service.** A single type with `SaveFile`, `GetUser` and `ProcessPayment` on it
-is the anti-pattern the Wails bindings best-practices page opens with. Split by
-responsibility — `FileService`, `UserService`, `PaymentService` — and name methods for the
-action they take (`SaveDocument`, not `Do`).
+- ❌ No `libraries/**` file importing `pkg/application`. If a library needs to reach the
+  UI, return a value or an error and let the service translate it.
 
 ## Registration
 
-- **Register pointers**: `application.NewService(&DemoService{})`. By value,
-  methods run on a copy — accumulated state is silently discarded and
-  pointer-receiver methods are not bound at all. Enforced by Semgrep
-  `go-wails-service-registered-by-value`.
+- **Register pointers**: `application.NewService(&DemoService{})`. By value, methods run
+  on a copy — accumulated state is silently discarded and pointer-receiver methods are not
+  bound at all. Enforced by Semgrep `go-wails-service-registered-by-value`.
 - Dependencies go in through plain constructors
-  (`application.NewService(NewNoteService(db))`). **No DI framework** — the architecture
-  guide suggests Wire; this repo does not use it.
+  (`application.NewService(NewNoteService(db))`). **No DI framework** — the upstream
+  architecture guide suggests Wire; this repo does not use it. "Inject dependencies" here
+  means a constructor parameter, nothing more.
 - **A service that emits events needs the app itself**, which cannot be referenced inside
   `application.Options`. Register it after construction:
   `app.RegisterService(application.NewService(NewClockService(app)))` —
   `apps/desktop/services/clock.go` is the example.
-- Services are **singletons shared across every window**. Guard mutable state
-  with a mutex.
 
 ## Lifecycle
 
@@ -51,32 +43,24 @@ func (s *S) ServiceStartup(ctx context.Context, o application.ServiceOptions) er
 func (s *S) ServiceShutdown() error
 ```
 
-- Startup runs in **registration order**; returning an error **aborts app
-  startup**. Keep it fast.
-- Shutdown runs in **reverse order**; the app context is already cancelled, and
-  an error only logs a warning. Always release what startup acquired.
+- Startup runs in **registration order**; returning an error **aborts app startup**. Keep
+  it fast — do the I/O here once rather than per call, but do not block on the network.
+- Shutdown runs in **reverse order**; the app context is already canceled, and an error
+  only logs a warning. Always release what startup acquired, and **wait** for anything it
+  started.
+- The `ctx` passed to startup is the app's lifetime. A goroutine that outlives a request
+  should select on it — `go/performance-and-concurrency.md` owns goroutine ownership.
 
-## The frontend is untrusted input
+## Shared state
 
-Every exported method is a trust boundary — treat it exactly as an HTTP
-handler taking a request body.
-
-- **Validate arguments.** Bound length, reject empty, check ranges.
-  `DemoService.Greet` bounds the name length for this reason.
-- ❌ **Never build a shell command or filesystem path from a raw frontend
-  string.** Semgrep `go-wails-exec-in-service` flags `exec` inside a service.
-- **Return errors; do not panic and do not swallow.** A returned error becomes
-  a rejected promise carrying its message, so the message is user-visible —
-  write it accordingly, and don't leak internals into it.
-- Secrets stay in Go. Anything reachable from the frontend bundle is readable
-  by the user.
-- Long work blocks that promise, not the UI. Emit progress events rather than
-  making the frontend poll.
+Services are **singletons shared across every window**, so concurrent calls are the
+default assumption. `go/performance-and-concurrency.md` owns the locking rules; the short
+version is guard the state, and never hold the lock across I/O.
 
 ## Go house rules that bite here
 
 `.golangci.yml` runs ~60 linters; two catch newcomers in this package:
 
-- **`wrapcheck`** — an error crossing a package boundary needs context:
-  `fmt.Errorf("divide %d by %d: %w", a, b, err)`.
+- **`wrapcheck`** — an error crossing a package boundary needs context. `go/errors.md`
+  owns error style.
 - **`forbidigo`** bans `fmt.Print*` and `log.*`. Use `slog`.

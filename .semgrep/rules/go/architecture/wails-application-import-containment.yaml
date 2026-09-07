@@ -8,7 +8,7 @@ rules:
       testable as ordinary Go and the services in apps/desktop/services stay
       thin adapters over it. If a library needs to reach the UI, return a value
       or an error and let the service translate it.
-      See .claude/skills/wails/SKILL.md.
+      See .claude/rules/wails/services.md.
     paths:
       # Globs resolve against the SCAN ROOT (`apps libraries`), so a leading
       # `apps/` would match nothing — see .semgrep/README.md.

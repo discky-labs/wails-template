@@ -25,6 +25,58 @@ Mirrors the structure of the official
 be checked against its source. **Repo adaptations are at the end** — a few doc examples
 fail this repo's linters verbatim.
 
+## 0. The shape of an app
+
+Migrated here when the separate `wails` skill was retired for restating the rules.
+
+```go
+//go:embed all:frontend/dist
+var assets embed.FS
+
+func main() {
+    application.RegisterEvent[string]("time")
+
+    app := application.New(application.Options{
+        Name: appName,
+        Services: []application.Service{
+            application.NewService(&services.DemoService{}),
+        },
+        Assets: application.AssetOptions{
+            Handler: application.AssetFileServerFS(assets),
+        },
+    })
+
+    app.Window.NewWithOptions(application.WebviewWindowOptions{Title: appName})
+
+    if err := app.Run(); err != nil { // blocks; must be the main goroutine
+        slog.Error("application exited with an error", "error", err)
+        os.Exit(1)
+    }
+}
+```
+
+Two places the upstream template differs from what this repo's linters allow:
+`log.Fatal` is banned by `forbidigo` (use `slog` + `os.Exit(1)`), and `init()` is
+banned by `gochecknoinits`, so `RegisterEvent` sits at the top of `main()` — the
+binding generator finds it either way (verified).
+
+`apps/desktop/main.go` additionally installs a `PanicHandler` and an opt-in
+`runtime/trace` block; see sections 4 and 5.
+
+**The manager inventory.** Everything hangs off the app — if a method seems
+missing it moved under a manager, so check the changelog rather than inventing a
+signature. The flat forms (`app.NewWebviewWindowWithOptions`, `app.OnEvent`) are
+an alpha-era shape that `wails/v3-only.md` rejects and Semgrep enforces:
+
+```go
+app.Window      // New(), NewWithOptions(), GetByName(), GetAll(), Current()
+app.Event       // Emit(), On(), OnApplicationEvent()
+app.Dialog      // Info/Error/Question/OpenFile/SaveFile
+app.Menu        app.SystemTray   app.Clipboard   app.Screen
+app.KeyBinding  app.Browser      app.Logger      app.Updater
+app.Env         app.ContextMenu
+```
+
 ## 1. API design
 
 **Single responsibility.** One service, one purpose. The god service is the named
@@ -209,10 +261,19 @@ go tool pprof -http=:8080 cpu.prof
 
 **Service layer** over Wails-free domain packages — `libraries/core` and
 `libraries/config` here, adapted by `apps/desktop/services`. **Repository** interfaces
-when persistence gets non-trivial. **Centralised state** guarded by `sync.RWMutex`.
+when persistence gets non-trivial.
 
-Do: separate concerns, keep services focused, inject dependencies, handle errors.
-Don't: god objects, tight coupling, **ignore concurrency**, over-engineer.
+On state: the upstream guide reaches for one centralised store guarded by
+`sync.RWMutex`. In a monorepo prefer state owned by the library that defines it
+(`structure.md`); a shared store is for values genuinely read across features, and then
+`go/performance-and-concurrency.md`'s locking rules apply.
+
+Do: separate concerns, keep services focused, pass dependencies through
+constructors, handle errors. Don't: god objects, tight coupling, **ignore
+concurrency**, over-engineer.
+
+("Inject dependencies" in the upstream guide means Wire; here it means a constructor
+parameter — see `wails/services.md`.)
 
 ## 7. Testing
 

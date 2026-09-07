@@ -62,13 +62,16 @@ whole process down. This is the least obvious rule here.
 - **Never assume bound calls are serialised.** A service is a singleton shared across
   every window, so guard mutable state with a mutex regardless of whether you added
   concurrency yourself. `go test -race` is the gate (`.moon/tasks/go.yml`).
-- ❌ **Never hold a lock across a syscall.** A reader must not queue behind a file write.
-  `PreferencesService` is the reference: `writeMu` serialises the read-modify-write while
-  `mu` is released across the disk write, so `Get()` never waits on I/O.
+- ✅ **`sync.RWMutex` for state read more than written**, and a **second, plain mutex to
+  serialise writers** when a write involves I/O. That is two locks doing two jobs, not
+  belt-and-braces.
+- ❌ **Never hold either lock across a syscall.** A reader must not queue behind a file
+  write. `PreferencesService` is the reference: `writeMu` spans the read-modify-write
+  while `mu` is released across the disk write, so `Get()` never waits on I/O.
 - ✅ `sync.Pool` only under **measured** allocation pressure, never as a default.
 
 ## Secrets
 
-❌ **Never put a secret in `libraries/config`** — it is plaintext JSON in the user's
-config dir. Use the OS keychain. Anything reachable from the frontend bundle, including
-every `VITE_*` value, is readable by the user.
+`go/security.md` owns this. The one performance-shaped consequence: caching a decrypted
+secret in a service field keeps it in memory for the life of the app — fetch it from the
+keychain when needed instead.

@@ -174,6 +174,10 @@ the check that enforces it.
 | [`frontend/design-tokens.md`](.claude/rules/frontend/design-tokens.md)                 | Every colour in one folder; the two-layer palette         | `moon run root:check-design-tokens`                          |
 | [`go/performance-and-concurrency.md`](.claude/rules/go/performance-and-concurrency.md) | Measure first; batch over goroutines; goroutine ownership | `go test -race`, review                                      |
 | [`structure.md`](.claude/rules/structure.md)                                           | Folder and file layout; when code earns a library         | review                                                       |
+| [`wails/api-design.md`](.claude/rules/wails/api-design.md)                             | Bound API surface: naming, returns, versioning            | Semgrep + review                                             |
+| [`go/errors.md`](.claude/rules/go/errors.md)                                           | Error wrapping, typed errors, retry, panics               | `wrapcheck`, `forbidigo`                                     |
+| [`go/testing.md`](.claude/rules/go/testing.md)                                         | Unit / integration / mock tiers                           | `go test -race`, `desktop:smoke`                             |
+| [`go/security.md`](.claude/rules/go/security.md)                                       | Trust boundary, paths, secrets, auth                      | Semgrep `go-wails-exec-in-service`                           |
 
 ## More
 
@@ -181,8 +185,6 @@ the check that enforces it.
   Wails v3 rules, each with a fixture
 - [`.claude/skills/README.md`](.claude/skills/README.md) — the rule-versus-skill split:
   a rule changes a decision, a skill shows how
-- [`.claude/skills/wails/SKILL.md`](.claude/skills/wails/SKILL.md) — the fuller
-  Wails v3 reference, for humans and agents
 - [`.claude/skills/wails-best-practices/SKILL.md`](.claude/skills/wails-best-practices/SKILL.md)
   — API design, performance, security, panics, profiling and traces
 - [Wails v3 docs](https://v3.wails.io)

@@ -7,7 +7,7 @@ rules:
       any state the service accumulates is silently discarded and pointer-
       receiver methods are not bound at all. Register a pointer:
       `application.NewService(&DemoService{})`.
-      See .claude/skills/wails/SKILL.md.
+      See .claude/rules/wails/services.md.
     patterns:
       - pattern-either:
           - pattern: application.NewService($T{...})

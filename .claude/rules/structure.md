@@ -40,17 +40,17 @@ apps/desktop/
 └── build/             wails3-owned; do not hand-edit generated parts
 ```
 
-- **One service per concern, one file per service**, named for the service
-  (`preferences.go` → `PreferencesService`). The official bindings best-practices page
-  opens with the god-service anti-pattern; see `wails/services.md`.
+- **One file per service**, named for the service (`preferences.go` →
+  `PreferencesService`). Why one service per concern is `wails/api-design.md`.
 - **`main.go` wires, it does not implement.** If logic is accumulating there, it is a
   service. The `ClockService` extraction is precisely this move.
 - **Domain types live with the domain**, in the library that owns them — not in a shared
   `models/` bucket. A `models/` folder that every service imports becomes the coupling
   it was meant to prevent. (The architecture guide shows `models/`; at monorepo scale a
   per-library type is better.)
-- **Split a service** when it grows a second responsibility, or when its file passes
-  ~300 lines with unrelated method groups.
+- **Split a service** when it grows a second responsibility. Length alone is not the
+  trigger — a long file of closely related methods is fine, and unrelated method groups
+  are not fine at any length.
 - Tests sit beside the code as `<name>_test.go`, package `<pkg>_test` so they exercise
   only the exported surface.
 
@@ -92,5 +92,5 @@ apps/desktop/frontend/src/
 - **Cross-importing between sibling feature folders** — hoist the shared piece to
   `components/ui/` or `hooks/`.
 - **A `utils/` or `helpers/` grab bag.** Name the concern.
-- **Generated output edited by hand** — `bindings/`, `*.gen.ts`. See
-  `wails/bindings.md`.
+- **Generated output edited by hand** — `wails/bindings.md` owns which files are
+  generated and why they are still committed.

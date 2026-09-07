@@ -8,7 +8,7 @@ rules:
       `app.Window.New()`, `app.Event.On(...)`, `app.Menu.New()` and
       `app.SystemTray.New()`. Older tutorials — and LLM training data — are full
       of the flat form, so this is easy to reintroduce by accident.
-      See .claude/skills/wails/SKILL.md.
+      See .claude/rules/wails/v3-only.md.
     patterns:
       - pattern-either:
           - pattern: $APP.NewWebviewWindow(...)
