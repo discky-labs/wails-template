@@ -12,7 +12,7 @@ Patterns and code live in
 ❌ **No god service.** A single type carrying `SaveFile`, `GetUser` and `ProcessPayment`
 is the anti-pattern the official page opens with. Split by responsibility —
 `FileService`, `UserService`, `PaymentService` — one file each
-(`structure.md`).
+(`monorepo/structure.md`).
 
 **Split** when a service grows a second responsibility, not when it grows long.
 

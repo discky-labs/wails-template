@@ -265,7 +265,7 @@ when persistence gets non-trivial.
 
 On state: the upstream guide reaches for one centralised store guarded by
 `sync.RWMutex`. In a monorepo prefer state owned by the library that defines it
-(`structure.md`); a shared store is for values genuinely read across features, and then
+(`monorepo/structure.md`); a shared store is for values genuinely read across features, and then
 `go/performance-and-concurrency.md`'s locking rules apply.
 
 Do: separate concerns, keep services focused, pass dependencies through

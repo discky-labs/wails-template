@@ -173,7 +173,7 @@ the check that enforces it.
 | [`wails/build-and-dev.md`](.claude/rules/wails/build-and-dev.md)                       | moon is the task runner; build and dev contracts          | `moon ci`, the 3-OS matrix                                   |
 | [`frontend/design-tokens.md`](.claude/rules/frontend/design-tokens.md)                 | Every colour in one folder; the two-layer palette         | `moon run root:check-design-tokens`                          |
 | [`go/performance-and-concurrency.md`](.claude/rules/go/performance-and-concurrency.md) | Measure first; batch over goroutines; goroutine ownership | `go test -race`, review                                      |
-| [`structure.md`](.claude/rules/structure.md)                                           | Folder and file layout; when code earns a library         | review                                                       |
+| [`monorepo/structure.md`](.claude/rules/monorepo/structure.md)                         | Folder and file layout; when code earns a library         | review                                                       |
 | [`wails/api-design.md`](.claude/rules/wails/api-design.md)                             | Bound API surface: naming, returns, versioning            | Semgrep + review                                             |
 | [`go/errors.md`](.claude/rules/go/errors.md)                                           | Error wrapping, typed errors, retry, panics               | `wrapcheck`, `forbidigo`                                     |
 | [`go/testing.md`](.claude/rules/go/testing.md)                                         | Unit / integration / mock tiers                           | `go test -race`, `desktop:smoke`                             |

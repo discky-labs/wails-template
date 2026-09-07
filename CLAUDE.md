@@ -32,7 +32,7 @@ monorepo with proto-pinned toolchains.
 | Touching generated bindings      | `.claude/rules/wails/bindings.md`                 |
 | Build, dev mode, packaging, CI   | `.claude/rules/wails/build-and-dev.md`            |
 | Anything involving a colour      | `.claude/rules/frontend/design-tokens.md`         |
-| Adding a file, folder or project | `.claude/rules/structure.md`                      |
+| Adding a file, folder or project | `.claude/rules/monorepo/structure.md`             |
 | Performance, goroutines, locks   | `.claude/rules/go/performance-and-concurrency.md` |
 | Profiling, tracing, API design   | `.claude/skills/wails-best-practices/SKILL.md`    |
 | Adding a Semgrep rule            | `.semgrep/README.md`                              |

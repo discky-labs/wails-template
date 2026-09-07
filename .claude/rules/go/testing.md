@@ -10,7 +10,7 @@ section 7.
 
 - ✅ **Test the Wails-free packages directly.** `libraries/core` and `libraries/config`
   need no webview, so they are fast and deterministic. This is the payoff for keeping
-  domain code out of `apps/` (`structure.md`).
+  domain code out of `apps/` (`monorepo/structure.md`).
 - ✅ **`package <pkg>_test`**, so a test can only reach the exported surface. If a test
   needs an unexported symbol, that is a signal the API is wrong, not that the test needs
   privileges.

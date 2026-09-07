@@ -14,14 +14,14 @@ Several rules are mechanically enforced — by the Semgrep suite in
 the rule id or task so a CI failure is traceable back to the reason.
 
 Rules are grouped by topic folder, so a second app or a backend concern lands
-beside its peers rather than in a flat list. A rule that spans every language —
-`structure.md` — sits at the top level instead. For the rule-versus-skill split, see
+beside its peers rather than in a flat list — including `monorepo/`, for rules about the
+repository itself rather than one language. For the rule-versus-skill split, see
 [`../skills/README.md`](../skills/README.md): if it changes a decision it is a rule, if
 it shows how it is a skill.
 
 | File                                | Covers                                               |
 | ----------------------------------- | ---------------------------------------------------- |
-| `structure.md`                      | Folder and file layout; when code earns a library    |
+| `monorepo/structure.md`             | Folder and file layout; when code earns a library    |
 | `wails/v3-only.md`                  | v3 is the only target; the v2 constructs to reject   |
 | `wails/api-design.md`               | Bound API surface: naming, returns, versioning       |
 | `wails/services.md`                 | Service shape, registration, lifecycle               |
