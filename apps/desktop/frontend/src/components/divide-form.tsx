@@ -35,21 +35,21 @@ export function DivideForm() {
     >
       <input
         aria-label="Dividend"
-        className="w-20 rounded-md border border-neutral-700 bg-neutral-900 px-3 py-2 outline-none focus:border-brand"
+        className="w-20 rounded-md border border-border bg-surface px-3 py-2 outline-none focus:border-brand"
         inputMode="numeric"
         value={a}
         onChange={(event) => setA(event.target.value)}
       />
-      <span className="text-neutral-500">/</span>
+      <span className="text-muted-foreground">/</span>
       <input
         aria-label="Divisor"
-        className="w-20 rounded-md border border-neutral-700 bg-neutral-900 px-3 py-2 outline-none focus:border-brand"
+        className="w-20 rounded-md border border-border bg-surface px-3 py-2 outline-none focus:border-brand"
         inputMode="numeric"
         value={b}
         onChange={(event) => setB(event.target.value)}
       />
       <button
-        className="rounded-md border border-neutral-700 px-4 py-2 font-medium disabled:opacity-50"
+        className="rounded-md border border-border px-4 py-2 font-medium disabled:opacity-50"
         disabled={divide.isPending}
         type="submit"
       >

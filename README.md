@@ -52,9 +52,11 @@ toolchains.
 │   ├── .air.toml            # Go watcher for dev mode
 │   └── frontend/            # React app (own pnpm + moon project)
 │       ├── src/routes/      # TanStack Router file routes
+│       ├── src/styles/      # THE palette — every colour lives here
 │       └── bindings/        # generated from Go — COMMITTED
 ├── libraries/
 │   ├── core/                # Go domain logic, zero Wails imports
+│   ├── config/              # preferences persisted to the OS config dir
 │   └── ts-shared/           # @local/ts-shared
 ├── scripts/                 # task bodies (build, package, dev, bindings…)
 ├── .moon/                   # workspace + inherited task definitions
@@ -94,6 +96,7 @@ moon ci                         # the full CI pipeline, locally
 
 moon run desktop-frontend:bindings  # regenerate Go -> TS bindings
 moon run root:semgrep               # Wails-specific static analysis
+moon run root:check-design-tokens   # one source of truth for colour
 moon query projects                 # what moon can see
 ```
 
@@ -148,6 +151,12 @@ the script listed as a task input so a script edit invalidates the cache.
   references on top, and moon syncs the `references` from workspace deps.
 - **Dependency versions live in the pnpm catalog** (`pnpm-workspace.yaml`).
   `@wailsio/runtime` must stay equal to the Go module version.
+- **Every colour lives in `frontend/src/styles/`**, in two layers: `--swatch-*`
+  appearance names hold the literals (each hex written once), and role tokens
+  (`--background`, `--border`) alias them. Components name roles, never
+  literals and never raw Tailwind palette utilities. `main.go`'s window
+  background is checked against `--background`, because it is painted before
+  the webview loads. See `.claude/rules/design-tokens.md`.
 
 ## More
 

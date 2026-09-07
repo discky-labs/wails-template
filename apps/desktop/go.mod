@@ -3,6 +3,7 @@ module github.com/raphaeldiscky/wails-template/apps/desktop
 go 1.26.0
 
 require (
+	github.com/raphaeldiscky/wails-template/libraries/config v0.0.0-00010101000000-000000000000
 	github.com/raphaeldiscky/wails-template/libraries/core v0.0.0-00010101000000-000000000000
 	github.com/wailsapp/wails/v3 v3.0.0-beta.17
 )
@@ -176,3 +177,5 @@ tool (
 )
 
 replace github.com/raphaeldiscky/wails-template/libraries/core => ../../libraries/core
+
+replace github.com/raphaeldiscky/wails-template/libraries/config => ../../libraries/config

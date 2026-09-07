@@ -8,6 +8,8 @@ import (
 
 	"github.com/wailsapp/wails/v3/pkg/application"
 
+	"github.com/raphaeldiscky/wails-template/libraries/config"
+
 	"github.com/raphaeldiscky/wails-template/apps/desktop/services"
 )
 
@@ -30,11 +32,22 @@ func main() {
 	// typed listener for it on the frontend.
 	application.RegisterEvent[string]("time")
 
+	// Preferences live in the OS config dir. A failure here is fatal: it means
+	// the platform has no config directory, so there is nowhere to persist to.
+	prefsStore, err := config.NewStore(appName)
+	if err != nil {
+		slog.Error("cannot locate the user config directory", "error", err)
+		os.Exit(1)
+	}
+
 	app := application.New(application.Options{
 		Name:        appName,
 		Description: "Wails v3 + Go + React desktop template",
 		Services: []application.Service{
 			application.NewService(&services.DemoService{}),
+			// Registration order is startup order, and shutdown runs in
+			// reverse — so this service loads last and saves first.
+			application.NewService(services.NewPreferencesService(prefsStore)),
 		},
 		Assets: application.AssetOptions{
 			Handler: application.AssetFileServerFS(assets),
@@ -53,6 +66,9 @@ func main() {
 			Backdrop:                application.MacBackdropTranslucent,
 			TitleBar:                application.MacTitleBarHiddenInset,
 		},
+		// MUST equal --background in frontend/src/styles/tokens.css, or the
+		// native window flashes the wrong color before the webview paints.
+		// Enforced by scripts/check-design-tokens.mjs.
 		BackgroundColour: application.NewRGB(10, 10, 10),
 		URL:              "/",
 	})

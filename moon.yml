@@ -75,12 +75,31 @@ tasks:
       runInCI: true
       cache: true
 
+  # One source of truth for colour: every literal lives in the frontend's
+  # styles folder, tokens.css never writes a hex twice, and main.go's native
+  # window background equals --background. See the script's header.
+  check-design-tokens:
+    script: "node ./scripts/check-design-tokens.mjs"
+    inputs:
+      - "apps/*/frontend/src/**/*"
+      - "libraries/*/src/**/*"
+      - "apps/desktop/main.go"
+      - "scripts/check-design-tokens.mjs"
+    options:
+      runInCI: true
+      cache: true
+
   # Repo-specific static analysis — the Wails v3 invariants golangci-lint
   # cannot express (v2/v3 API mixing, manager-API drift, embed prefix, service
   # registered by value). Rules + fixtures live in .semgrep/; read
   # .semgrep/README.md before adding one.
   semgrep:
     script: "bash ./scripts/semgrep.sh scan"
+    # Run the rules' own tests first. Two reasons: scanning with rules that
+    # fail their own suite is meaningless, and running both semgrep invocations
+    # concurrently was observed to fail intermittently (they share state under
+    # the hood) — an ordered dep makes the pipeline deterministic.
+    deps: ["~:semgrep-test"]
     inputs:
       - "apps/**/*.go"
       - "libraries/**/*.go"

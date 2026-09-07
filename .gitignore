@@ -74,4 +74,8 @@ apps/desktop/build/linux/appimage/*.png
 apps/desktop/build/linux/desktop
 apps/desktop/build/linux/*.desktop
 apps/desktop/build/windows/nsis/MicrosoftEdgeWebview2Setup.exe
+# Mobile targets are out of scope for this template, but
+# `moon run desktop:update-build-assets` regenerates their scaffolding.
+apps/desktop/build/ios/
+apps/desktop/build/android/
 *.syso

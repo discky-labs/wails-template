@@ -34,13 +34,13 @@ export function GreetForm() {
     >
       <input
         aria-label="Your name"
-        className="flex-1 rounded-md border border-neutral-700 bg-neutral-900 px-3 py-2 outline-none focus:border-brand"
+        className="flex-1 rounded-md border border-border bg-surface px-3 py-2 outline-none focus:border-brand"
         placeholder="Your name"
         value={name}
         onChange={(event) => setName(event.target.value)}
       />
       <button
-        className="rounded-md bg-brand px-4 py-2 font-medium disabled:opacity-50"
+        className="rounded-md bg-brand text-brand-foreground px-4 py-2 font-medium disabled:opacity-50"
         disabled={greet.isPending}
         type="submit"
       >

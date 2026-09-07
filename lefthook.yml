@@ -32,6 +32,9 @@ pre-push:
     # staged set, and skips itself when semgrep isn't installed locally.
     semgrep:
       run: moon run root:semgrep
+    # Cheap and whole-tree, so it runs on push rather than per staged file.
+    design-tokens:
+      run: moon run root:check-design-tokens
 
 commit-msg:
   commands:

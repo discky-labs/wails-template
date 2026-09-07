@@ -7,7 +7,7 @@ export const Route = createRootRoute({
 
 function RootLayout() {
   return (
-    <div className="flex min-h-full flex-col bg-neutral-950 text-neutral-100">
+    <div className="flex min-h-full flex-col bg-background text-foreground">
       <Outlet />
       <Toaster theme="dark" position="bottom-center" />
     </div>

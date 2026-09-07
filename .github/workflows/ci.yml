@@ -94,6 +94,8 @@ jobs:
         run: moon ci :typos
       - name: check-consistency
         run: moon ci :check-consistency
+      - name: check-design-tokens
+        run: moon ci :check-design-tokens
       - name: deadcode
         run: moon ci :deadcode
       - name: audit

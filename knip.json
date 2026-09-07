@@ -9,6 +9,9 @@
         "oxfmt",
         "oxlint",
         "syncpack"
+      ],
+      "ignore": [
+        "scripts/check-design-tokens.mjs"
       ]
     },
     "libraries/ts-shared": {},

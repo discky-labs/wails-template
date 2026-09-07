@@ -1,0 +1,24 @@
+# Normalise line endings so a Windows checkout doesn't rewrite every file.
+* text=auto eol=lf
+*.sh text eol=lf
+*.png binary
+*.jpg binary
+*.ico binary
+*.icns binary
+*.car binary
+*.ttf binary
+*.woff2 binary
+
+# ---------------------------------------------------------------------------
+# Generated, but committed (the frontend build cannot resolve ./bindings, and
+# tsc cannot see the route tree, without them). Marking them keeps a
+# regeneration out of review diffs and out of GitHub's language stats — both of
+# which would otherwise be dominated by output nobody wrote.
+# ---------------------------------------------------------------------------
+apps/desktop/frontend/bindings/** linguist-generated=true
+apps/desktop/frontend/src/routeTree.gen.ts linguist-generated=true
+
+# Build scaffolding shipped by wails3 (NSIS scripts, nfpm packaging, plists).
+# Real files we may edit, but they are vendored templates, not this project's
+# source, so they should not be counted as its language.
+apps/desktop/build/** linguist-vendored=true

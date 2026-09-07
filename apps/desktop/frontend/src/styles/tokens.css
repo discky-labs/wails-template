@@ -1,0 +1,55 @@
+/**
+ * THE palette. Every colour in this repo is declared here and nowhere else, so
+ * a value cannot drift between a component, the Tailwind bridge and the Go
+ * window background.
+ *
+ * Plain CSS on purpose — no Tailwind at-rules — so this file stays readable by
+ * any pipeline. The Tailwind v4 bridge (`@theme inline`) lives next door in
+ * tailwind.css.
+ *
+ * Enforced by `moon run root:check-design-tokens`:
+ *   1. no colour literal anywhere outside this folder,
+ *   2. no hex written twice inside this file,
+ *   3. main.go's window background matches `--background`.
+ *
+ * ---- One surface, one theme ----
+ * This app is dark, statically: `main.go` paints the native window
+ * `--background` before the webview loads, so a light page would flash the
+ * wrong colour on launch. There is deliberately no second theme block and no
+ * `prefers-color-scheme` following.
+ *
+ * To add one: put the differing values in a `[data-theme="light"] { … }` block below,
+ * set the attribute on <html> in index.html, and add
+ * `@custom-variant light (&:where([data-theme="light"], [data-theme="light"] *))`
+ * to tailwind.css so the `light:` utilities compile.
+ */
+
+:root {
+  /* Corner radius base; the sm/md/lg/xl scale is calc()'d off it in
+     tailwind.css. */
+  --radius: 0.5rem;
+
+  /* ---- the swatch layer: APPEARANCE names, no meaning attached ----
+     These hold the LITERALS. Every role below reaches its colour by aliasing
+     one, so each hex is written exactly once. Named for what they look like,
+     not what they are for: a role can be repointed at a different swatch
+     without the swatch name becoming a lie. */
+  --swatch-ink: #0a0a0a; /* the window ground — mirrored by main.go */
+  --swatch-graphite: #171717; /* a raised surface on the ground */
+  --swatch-slate: #404040; /* hairlines that read against graphite */
+  --swatch-mist: #f5f5f5; /* primary text */
+  --swatch-fog: #a3a3a3; /* text that must recede */
+  --swatch-indigo: #4f46e5; /* the identity */
+  --swatch-white: #ffffff;
+
+  /* ---- the role layer: what each colour is FOR ----
+     Components only ever name these (via the Tailwind utilities the bridge
+     generates). No component names a swatch, and none writes a literal. */
+  --background: var(--swatch-ink);
+  --foreground: var(--swatch-mist);
+  --surface: var(--swatch-graphite);
+  --muted-foreground: var(--swatch-fog);
+  --border: var(--swatch-slate);
+  --brand: var(--swatch-indigo);
+  --brand-foreground: var(--swatch-white);
+}

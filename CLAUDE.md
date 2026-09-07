@@ -45,6 +45,9 @@ monorepo with proto-pinned toolchains.
 - ❌ **No unvalidated frontend input**, and never into `exec` or a file path.
 - ❌ **No `fmt.Print*` / `log.*`** (forbidigo) and no `init()` (gochecknoinits)
   — use `slog`.
+- ❌ **No colour literal** outside `apps/desktop/frontend/src/styles/`, and no
+  raw Tailwind palette utility (`bg-neutral-950`) for a design decision — name
+  a role (`bg-background`).
 - ❌ **No `npm`/`yarn`** — pnpm only, and dependency versions live in the
   **pnpm catalog**, not in a package.json.
 
@@ -62,6 +65,7 @@ moon ci                         # the full CI pipeline, locally
 
 moon run desktop-frontend:bindings  # regenerate Go -> TS bindings
 moon run root:semgrep               # Wails-specific static analysis
+moon run root:check-design-tokens   # one source of truth for colour
 moon query projects                 # what moon can see
 ```
 

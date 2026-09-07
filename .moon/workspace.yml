@@ -10,6 +10,7 @@ projects:
     root: "."
     desktop: "apps/desktop"
     desktop-frontend: "apps/desktop/frontend"
+    config: "libraries/config"
     core: "libraries/core"
     ts-shared: "libraries/ts-shared"
 
